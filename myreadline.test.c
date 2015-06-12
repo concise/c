@@ -1,23 +1,31 @@
 #include <stdio.h> // printf fflush stdout
 #include "myreadline.h"
 
-static void prompt(void)
-{
-    printf(">>> ");
-    fflush(stdout);
-}
-
-int main()
+int main(void)
 {
     int ret;
-    unsigned char buf[1024];
+    unsigned char buf[10];
 
-    prompt();
+loop:
+    printf(">>> ");
+    fflush(stdout);
 
-    while ((ret = myreadline(1024, buf)) >= 0) {
-        printf("(%d \"%s\")\n", ret, buf);
-        prompt();
+read_more:
+    // READ
+    ret = myreadline(10, buf);
+    if (ret < 0) goto end;
+
+    // EVAL & PRINT
+    if (buf[ret - 1] != '\n') {
+        printf("(%d \"%*.*s\") ", ret, ret, ret, buf);
+        goto read_more;
     }
+    printf("(%d \"%*.*s\")\n", ret - 1, ret - 1, ret - 1, buf);
 
+    // LOOP
+    goto loop;
+
+end:
     printf("\n");
+    return 0;
 }
