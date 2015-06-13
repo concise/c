@@ -1,8 +1,6 @@
 #include <stdio.h> // fgetc EOF feof ferror
 #include <string.h> // memset
 
-int myfgets(char *str, int count, FILE *stream);
-
 // myfgets
 //
 //      Reads at most (count - 1) bytes from the given file stream and stores
@@ -19,7 +17,7 @@ int myfgets(char *str, int count, FILE *stream);
 //
 // Return value
 //
-//      Number of bytes (non-negative integer) read from stream,
+//      Number of bytes (positive integer) read from stream,
 //      -1 when some of the input parameters is invalid,
 //      -2 when no byte is read because of end-of-file condition,
 //      -3 when no byte is read because of some other I/O error,
@@ -36,7 +34,7 @@ int myfgets(char *str, int count, FILE *stream);
 //          }
 //      }
 
-int myfgets(char *str, int count, FILE *stream)
+static int myfgets(unsigned char *str, int count, FILE *stream)
 {
     int thisbyte = 0;
     int nbytes = 0;
@@ -72,68 +70,36 @@ int myfgets(char *str, int count, FILE *stream)
         return -4;
 }
 
-// Read at most (ocap - 1) bytes from stdin, and put all the bytes that are
-// successfully read and one extra 0x00 byte at the end into the buffer pointed
-// by obuf.  The number of bytes that are successfully read from stdin is
-// returned.  The read always stops if a '\n' character is reached.
-//
-//      ocap    shall be an int value in { 2, 3, 4, ..., INT_MAX }
-//      obuf    shall point to a buffer of at least ocap bytes
-//      return  an int value in { 0, 1, 2, ..., ocap - 1 }
-//
-//      if (ret < 0) {
-//
-//          // Check the error
-//
-//      } else if (ret == 0) {
-//
-//          // The EOF is reached so that we cannot read anything
-//
-//      } else if (obuf[ret - 1] == '\n') {
-//
-//          // A complete line is read into obuf
-//          // The length of this line including '\n' is ret
-//          // Note that obuf[ret] should be 0x00 here
-//
-//      } else {
-//
-//          // No '\n' found.   Need to continue read further bytes
-//          // Note that obuf[ret] should be 0x00 here
-//
-//      }
-//
-//  N  >=  1    read N bytes
-//  N  ==  0    read nothing because of an unknown reason
-//  N  == -1    read nothing because argument error
-//  N  == -2    read nothing because stdin error
-//  N  == -3    read nothing because stdin closed
-//
-int myreadline(int ocap, unsigned char *obuf)
+#define SWAP_CAPACITY 16384
+
+int myreadline(const unsigned char **pbufptr, int *pbufsize)
 {
-    int c = 0;
-    int nbytes = 0;
+    static unsigned char swap[SWAP_CAPACITY];
 
-    if (!(ocap > 1 && obuf)) {
-        return -1;
+    if (!(pbufptr && pbufsize)) {
+        return 1;
     }
 
-    while (c != '\n' && nbytes < ocap - 1 && (c = getc(stdin)) != EOF) {
-        obuf[nbytes] = c;
-        nbytes += 1;
-    }
-    obuf[nbytes] = 0x00;
+    // Invoke myfgets() one or more times
+    // until a complete line is read or
+    // until the swap size is not enough or
+    // until an I/O error occurs
 
-    if (c != EOF) {
-        return nbytes;
-    } else if (nbytes > 0) {
-        return nbytes;
-    } else if (ferror(stdin)) {
-        return -2;
-    } else if (feof(stdin)) {
-        return -3;
-    } else {
-        return 0;
+    int total_size = 0;
+    int chunk_size;
+
+    for (;;) {
+        chunk_size = myfgets(
+                swap + total_size, SWAP_CAPACITY - total_size, stdin);
+        if (chunk_size <= 0) {
+            return 2;
+        }
+        if (swap[total_size + chunk_size - 1] == '\n') {
+            total_size += chunk_size - 1;
+            *pbufptr = swap;
+            *pbufsize = total_size;
+            return 0;
+        }
+        total_size += chunk_size;
     }
 }
-
-// TODO: Refactor myreadline to use myfgets, malloc, realloc, free...

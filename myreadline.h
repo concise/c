@@ -1,6 +1,6 @@
 #ifndef __MYREADLINE_H__
 #define __MYREADLINE_H__
 
-int myreadline(int, unsigned char *);
+int myreadline(const unsigned char **pbufptr, int *pbufsize);
 
 #endif

@@ -3,24 +3,23 @@
 
 int main(void)
 {
+    const unsigned char *buf;
+    int blen;
     int ret;
-    unsigned char buf[10];
 
 loop:
+    // READ
     printf(">>> ");
     fflush(stdout);
+    ret = myreadline(&buf, &blen);
 
-read_more:
-    // READ
-    ret = myreadline(10, buf);
-    if (ret < 0) goto end;
+    if (ret != 0) {
+        printf("\n(myreadline returns nonzero value)\n");
+        goto end;
+    }
 
     // EVAL & PRINT
-    if (buf[ret - 1] != '\n') {
-        printf("(%d \"%*.*s\") ", ret, ret, ret, buf);
-        goto read_more;
-    }
-    printf("(%d \"%*.*s\")\n", ret - 1, ret - 1, ret - 1, buf);
+    printf("(%d \"%*.*s\")\n", blen, blen, blen, buf);
 
     // LOOP
     goto loop;
