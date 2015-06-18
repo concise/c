@@ -42,12 +42,72 @@ void sha256_init(sha256_context *ctx)
     ctx->nbytes = 0;
 }
 
+#define ROTL(n, x)      ((x << n) | (x >> (32 - n)))
+#define ROTR(n, x)      ((x >> n) | (x << (32 - n)))
+#define SHR(n, x)       (x >> n)
+#define Ch(x, y, z)     ((x & y) ^ (~x & z))
+#define Maj(x, y, z)    ((x & y) ^ (x ^ z) ^ (y & z))
+#define S0(x)           (ROTR(2, x) ^ ROTR(13, x) ^ ROTR(22, x))
+#define S1(x)           (ROTR(6, x) ^ ROTR(11, x) ^ ROTR(25, x))
+#define s0(x)           (ROTR(7, x) ^ ROTR(18, x) ^ SHR(3, x))
+#define s1(x)           (ROTR(17, x) ^ ROTR(19, x) ^ SHR(10, x))
+
 static void sha256_step(sha256_context *ctx)
 {
-    // TODO message schedule
-    // TODO initialize 8 working variables
-    // TODO repeat some statements 64 times
-    // TODO update the H0 ~ H7 intermediate hash value
+    unsigned long W[64];
+    unsigned long a, b, c, d, e, f, g, h, T1, T2;
+    unsigned long *H;
+    unsigned char *M;
+    int t;
+
+    if (!ctx) {
+        return;
+    }
+
+    H = ctx->H;         // uint32_t[8]
+    M = ctx->msgbuffer; // uint8_t[64]
+
+    // 1. Prepare the message schedule
+    for (t = 0; t <= 15; ++t) {
+        W[t] = M[t];
+    }
+    for (t = 16; t <= 63; ++t) {
+        W[t] = s1(W[t - 2]) + W[t - 7] + s0(W[t - 15]) + W[t - 16];
+    }
+
+    // 2. Initialize the eight working variables
+    a = H[0];
+    b = H[1];
+    c = H[2];
+    d = H[3];
+    e = H[4];
+    f = H[5];
+    g = H[6];
+    h = H[7];
+
+    // 3. repeat some statements 64 times
+    for (t = 0; t < 64; ++t) {
+        T1 = h + S1(e) + Ch(e, f, g) + K[t] + W[t];
+        T2 = S0(a) + Maj(a, b, c);
+        h = g;
+        g = f;
+        f = e;
+        e = d + T1;
+        d = c;
+        c = b;
+        b = a;
+        a = T1 + T2;
+    }
+
+    // 4. update the H0 ~ H7 intermediate hash value
+    H[0] += a;
+    H[1] += b;
+    H[2] += c;
+    H[3] += d;
+    H[4] += e;
+    H[5] += f;
+    H[6] += g;
+    H[7] += h;
 }
 
 void sha256_feed(
@@ -71,13 +131,13 @@ void sha256_feed(
 
 void sha256_done(sha256_context *ctx, void *obuf)
 {
-    unsigned char *output_buffer = (unsigned char *) obuf;
+    unsigned char *output_buffer = obuf;
 
     if (!ctx || !obuf) {
         return;
     }
 
-    // TODO now we know the bit length of the input
+    // TODO now we know the bit length of the input is (8*ctx->nbytes)
     // TODO add padding bytes after the last inputted message block
     // TODO execute one more step
     // TODO return H0 ~ H7
