@@ -63,3 +63,21 @@ void hexcodec_decode(int n, const void *ibuf, void *obuf)
         }
     }
 }
+
+unsigned char is_hexcodec_encoded(int n, const void *ibuf)
+{
+    unsigned char digit;
+
+    while (n--) {
+        digit = ((const unsigned char *) ibuf)[n];
+        if ((digit >= '0' && digit <= '9') ||
+            (digit >= 'A' && digit <= 'F') ||
+            (digit >= 'a' && digit <= 'f')) {
+            continue;
+        } else {
+            return 0;
+        }
+    }
+
+    return 1;
+}
