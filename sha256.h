@@ -1,14 +1,19 @@
 #ifndef __SHA256_H__
 #define __SHA256_H__
 
+typedef unsigned char U8;
+typedef unsigned long U32;
+
 typedef struct {
-    unsigned long H[8];     /* Intermediate hash value (8 32-bit words) */
-    unsigned long long L;   /* Byte length of the message we are hashing */
-    unsigned char M[64];    /* The last unprocessed message chunk */
+    U32 runninghash[8];    /* The intermediate hash value (H0, ..., H7) */
+    U32 totalbitlen[2];    /* The bit length of the input message (l)   */
+    U8 msgchunk[64];       /* The last unprocessed message chunk        */
+    U8 msgchunklen;        /* The byte length of the unprocessed chunk  */
 } sha256_context;
 
 void sha256_init(sha256_context *);
-void sha256_feed(sha256_context *, unsigned long long, const void *);
-void sha256_done(sha256_context *, void *);
+void sha256_feed(sha256_context *, U32, const U8 *);
+void sha256_done(const sha256_context *, U8 *);
+void sha256_hash(U32, const U8 *, U8 *);
 
 #endif
