@@ -23,10 +23,8 @@ static const U32 K[64] = {
     0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 };
 
-static void copy_context_from_to(const void *_src, void *_dst)
+static void copy_context_from_to(const sha256_context *src, sha256_context *dst)
 {
-    const sha256_context *src = _src;
-    sha256_context *dst = _dst;
     unsigned char i;
 
     dst->runninghash[0] = src->runninghash[0];
@@ -48,9 +46,8 @@ static void copy_context_from_to(const void *_src, void *_dst)
     dst->msgchunklen = src->msgchunklen;
 }
 
-static void process_one_block(void *_ctx, const unsigned char *data)
+static void process_one_block(sha256_context *ctx, const unsigned char *data)
 {
-    sha256_context *ctx = _ctx;
     U32 a, b, c, d, e, f, g, h, t1, t2, m[64];
     unsigned char i;
 
