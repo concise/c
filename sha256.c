@@ -1,16 +1,4 @@
-typedef unsigned char U8;
-typedef unsigned long U32;
-typedef struct {
-    U32 runninghash[8];    /* The intermediate hash value (H0, ..., H7) */
-    U32 totalbitlen[2];    /* The bit length of the input message (l)   */
-    U8 msgchunk[64];       /* The last unprocessed message chunk        */
-    U8 msgchunklen;        /* The byte length of the unprocessed chunk  */
-} sha256_context;
-
-void sha256_init(sha256_context *);
-void sha256_feed(sha256_context *, U32, const U8 *);
-void sha256_done(const sha256_context *, U8 *);
-void sha256_hash(U32, const U8 *, U8 *);
+#include "sha256.h"
 
 #define ROTR(a, b)      ((((a)&0xffffffff)>>(b))|(((a)<<(32-(b)))&0xffffffff))
 #define SHR(a, b)       (((a)&0xffffffff)>>(b))
@@ -110,12 +98,16 @@ static void add(U32 *bignumber, U32 incr)
      *      | bignumber[0] |    | bignumber[1] |
      *      +--------------+    +--------------+
      */
-    U32 t = 0xffffffff - bignumber[1];
-    if (incr < t) {
-        bignumber[1] = bignumber[1] + incr;
-    } else {
-        bignumber[1] = (bignumber[1] + incr) & 0xffffffff;
-        bignumber[0] = (bignumber[0] + 1   ) & 0xffffffff;
+    U32 space;
+
+    space = 0xffffffff - bignumber[1];
+    incr &= 0xffffffff;
+
+    bignumber[1] += incr;
+    bignumber[1] &= 0xffffffff;
+    if (incr >= space) {
+        bignumber[0] += 1;
+        bignumber[0] &= 0xffffffff;
     }
 }
 
