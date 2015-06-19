@@ -23,10 +23,11 @@ static const U32 K[64] = {
     0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 };
 
-static void copy_context_from_to(
-        const sha256_context *src, sha256_context *dst)
+static void copy_context_from_to(const void *_src, void *_dst)
 {
-    U8 i;
+    const sha256_context *src = _src;
+    sha256_context *dst = _dst;
+    unsigned char i;
 
     dst->runninghash[0] = src->runninghash[0];
     dst->runninghash[1] = src->runninghash[1];
@@ -47,10 +48,11 @@ static void copy_context_from_to(
     dst->msgchunklen = src->msgchunklen;
 }
 
-static void process_one_block(sha256_context *ctx, const U8 *data)
+static void process_one_block(void *_ctx, const unsigned char *data)
 {
+    sha256_context *ctx = _ctx;
     U32 a, b, c, d, e, f, g, h, t1, t2, m[64];
-    U8 i;
+    unsigned char i;
 
     for (i = 0; i <= 15; ++i) {
         m[i] = (data[i * 4 + 0] << 24) |
@@ -115,8 +117,10 @@ static void add(U32 *bignumber, U32 incr)
     }
 }
 
-void sha256_init(sha256_context *ctx)
+void sha256_starts(void *_ctx)
 {
+    sha256_context *ctx = _ctx;
+
     if (!ctx) {
         return;
     }
@@ -136,9 +140,10 @@ void sha256_init(sha256_context *ctx)
     ctx->msgchunklen = 0x00;
 }
 
-void sha256_feed(sha256_context *ctx, U32 ilen, const U8 *ibuf)
+void sha256_update(void *_ctx, int ilen, const unsigned char *ibuf)
 {
-    U32 i;
+    sha256_context *ctx = _ctx;
+    int i;
 
     if (!ctx || (ilen && !ibuf)) {
         return;
@@ -155,10 +160,11 @@ void sha256_feed(sha256_context *ctx, U32 ilen, const U8 *ibuf)
     }
 }
 
-void sha256_done(const sha256_context *ctx, U8 *obuf)
+void sha256_finish(void *_ctx, unsigned char *obuf)
 {
+    sha256_context *ctx = _ctx;
     sha256_context ctx_;
-    U8 i;
+    unsigned char i;
 
     if (!ctx || !obuf) {
         return;
@@ -204,7 +210,7 @@ void sha256_done(const sha256_context *ctx, U8 *obuf)
     }
 }
 
-void sha256(U32 ilen, const U8 *ibuf, U8 *obuf)
+void sha256(int ilen, const unsigned char *ibuf, unsigned char *obuf)
 {
     sha256_context ctx_;
 
@@ -212,9 +218,9 @@ void sha256(U32 ilen, const U8 *ibuf, U8 *obuf)
         return;
     }
 
-    sha256_init(&ctx_);
+    sha256_starts(&ctx_);
     if (ilen) {
-        sha256_feed(&ctx_, ilen, ibuf);
+        sha256_update(&ctx_, ilen, ibuf);
     }
-    sha256_done(&ctx_, obuf);
+    sha256_finish(&ctx_, obuf);
 }
