@@ -3,7 +3,7 @@
 #define ROTR(a, b)      ((((a)&0xffffffff)>>(b))|(((a)<<(32-(b)))&0xffffffff))
 #define SHR(a, b)       (((a)&0xffffffff)>>(b))
 #define Ch(x, y, z)     (((x) & (y)) ^ (~(x) & (z)))
-#define Maj(x, y, z)    (((x) & (y)) ^ ( (x) & (z)) ^ ((y) & (z)))
+#define Maj(x, y, z)    (((x) & (y)) ^ ((x) & (z)) ^ ((y) & (z)))
 #define S0(x)           (ROTR(x,  2) ^ ROTR(x, 13) ^ ROTR(x, 22))
 #define S1(x)           (ROTR(x,  6) ^ ROTR(x, 11) ^ ROTR(x, 25))
 #define Q0(x)           (ROTR(x,  7) ^ ROTR(x, 18) ^  SHR(x,  3))
@@ -27,6 +27,7 @@ static void copy_context_from_to(
         const sha256_context *src, sha256_context *dst)
 {
     U8 i;
+
     dst->runninghash[0] = src->runninghash[0];
     dst->runninghash[1] = src->runninghash[1];
     dst->runninghash[2] = src->runninghash[2];
@@ -35,17 +36,21 @@ static void copy_context_from_to(
     dst->runninghash[5] = src->runninghash[5];
     dst->runninghash[6] = src->runninghash[6];
     dst->runninghash[7] = src->runninghash[7];
+
     dst->totalbitlen[0] = src->totalbitlen[0];
     dst->totalbitlen[1] = src->totalbitlen[1];
+
     for (i = 0; i <= 63; ++i) {
         dst->msgchunk[i] = src->msgchunk[i];
     }
+
     dst->msgchunklen = src->msgchunklen;
 }
 
 static void process_one_block(sha256_context *ctx, const U8 *data)
 {
-    U32 a, b, c, d, e, f, g, h, i, t1, t2, m[64];
+    U32 a, b, c, d, e, f, g, h, t1, t2, m[64];
+    U8 i;
 
     for (i = 0; i <= 15; ++i) {
         m[i] = (data[i * 4 + 0] << 24) |
@@ -105,6 +110,7 @@ static void add(U32 *bignumber, U32 incr)
 
     bignumber[1] += incr;
     bignumber[1] &= 0xffffffff;
+
     if (incr >= space) {
         bignumber[0] += 1;
         bignumber[0] &= 0xffffffff;
@@ -116,6 +122,7 @@ void sha256_init(sha256_context *ctx)
     if (!ctx) {
         return;
     }
+
     ctx->runninghash[0] = 0x6a09e667;
     ctx->runninghash[1] = 0xbb67ae85;
     ctx->runninghash[2] = 0x3c6ef372;
@@ -124,8 +131,10 @@ void sha256_init(sha256_context *ctx)
     ctx->runninghash[5] = 0x9b05688c;
     ctx->runninghash[6] = 0x1f83d9ab;
     ctx->runninghash[7] = 0x5be0cd19;
+
     ctx->totalbitlen[0] = 0x00000000;
     ctx->totalbitlen[1] = 0x00000000;
+
     ctx->msgchunklen = 0x00;
 }
 

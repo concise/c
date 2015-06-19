@@ -2,7 +2,7 @@
 #define __SHA256_H__
 
 typedef unsigned char U8;
-typedef unsigned long U32;
+typedef unsigned long int U32;
 typedef struct {
     U32 runninghash[8];    /* The intermediate hash value (H0, ..., H7) */
     U32 totalbitlen[2];    /* The bit length of the input message (l)   */

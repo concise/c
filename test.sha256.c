@@ -2,7 +2,7 @@
 #include "hexcodec.h"
 #include <stdio.h>
 
-void foo(void)
+void test_sha256(void)
 {
     int c = 0;
     sha256_context ctx;
@@ -25,6 +25,6 @@ void foo(void)
 
 int main(void)
 {
-    foo();
+    test_sha256();
     return 0;
 }
