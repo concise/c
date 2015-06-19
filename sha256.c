@@ -204,7 +204,7 @@ void sha256_done(const sha256_context *ctx, U8 *obuf)
     }
 }
 
-void sha256_hash(U32 ilen, const U8 *ibuf, U8 *obuf)
+void sha256(U32 ilen, const U8 *ibuf, U8 *obuf)
 {
     sha256_context ctx_;
 

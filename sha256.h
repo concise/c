@@ -13,6 +13,6 @@ typedef struct {
 void sha256_init(sha256_context *);
 void sha256_feed(sha256_context *, U32, const U8 *);
 void sha256_done(const sha256_context *, U8 *);
-void sha256_hash(U32, const U8 *, U8 *);
+void sha256(U32, const U8 *, U8 *);
 
 #endif
