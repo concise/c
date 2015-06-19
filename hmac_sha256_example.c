@@ -5,7 +5,7 @@
 int main(void)
 {
     sha256_context sha256_ctx;
-    sha_info_t hmac_sha256_ctx;
+    hmac_info_t hmac_sha256_ctx;
     unsigned char bufferB[64];
     unsigned char bufferL[32];
     unsigned char obuf[32];

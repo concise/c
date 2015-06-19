@@ -10,13 +10,13 @@ typedef struct {
     unsigned char *bufferL;
     int B;
     int L;
-} sha_info_t;
+} hmac_info_t;
 
-void hmac_starts(const sha_info_t *, int, const unsigned char *);
-void hmac_update(const sha_info_t *, int, const unsigned char *);
-void hmac_finish(const sha_info_t *, unsigned char *);
-void hmac       (const sha_info_t *, int, const unsigned char *,
-                                     int, const unsigned char *,
-                                     unsigned char *);
+void hmac_starts(const hmac_info_t *, int, const unsigned char *);
+void hmac_update(const hmac_info_t *, int, const unsigned char *);
+void hmac_finish(const hmac_info_t *, unsigned char *);
+void hmac       (const hmac_info_t *, int, const unsigned char *,
+                                      int, const unsigned char *,
+                                      unsigned char *);
 
 #endif

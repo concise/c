@@ -1,6 +1,6 @@
 #include "hmac.h"
 
-static int is_bad_sha_info(const sha_info_t *info)
+static int is_bad_hmac_info(const hmac_info_t *info)
 {
     return !(
         info && info->sha_context && info->sha_starts && info->sha_update &&
@@ -9,11 +9,11 @@ static int is_bad_sha_info(const sha_info_t *info)
     );
 }
 
-void hmac_starts(const sha_info_t *info, int keylen, const unsigned char *key)
+void hmac_starts(const hmac_info_t *info, int keylen, const unsigned char *key)
 {
     int i;
 
-    if (is_bad_sha_info(info) || keylen < 0 || (keylen > 0 && !key)) {
+    if (is_bad_hmac_info(info) || keylen < 0 || (keylen > 0 && !key)) {
         return;
     }
 
@@ -45,9 +45,9 @@ void hmac_starts(const sha_info_t *info, int keylen, const unsigned char *key)
     }
 }
 
-void hmac_update(const sha_info_t *info, int msglen, const unsigned char *msg)
+void hmac_update(const hmac_info_t *info, int msglen, const unsigned char *msg)
 {
-    if (is_bad_sha_info(info) || msglen < 0 || (msglen > 0 && !msg)) {
+    if (is_bad_hmac_info(info) || msglen < 0 || (msglen > 0 && !msg)) {
         return;
     }
 
@@ -56,9 +56,9 @@ void hmac_update(const sha_info_t *info, int msglen, const unsigned char *msg)
     }
 }
 
-void hmac_finish(const sha_info_t *info, unsigned char *out)
+void hmac_finish(const hmac_info_t *info, unsigned char *out)
 {
-    if (is_bad_sha_info(info) || !out) {
+    if (is_bad_hmac_info(info) || !out) {
         return;
     }
 
@@ -69,12 +69,11 @@ void hmac_finish(const sha_info_t *info, unsigned char *out)
     (*info->sha_finish)(info->sha_context, out);
 }
 
-void hmac(const sha_info_t *info,
-          int keylen, const unsigned char *key,
-          int msglen, const unsigned char *msg,
-          unsigned char *out)
+void hmac(const hmac_info_t *info, int keylen, const unsigned char *key,
+                                   int msglen, const unsigned char *msg,
+                                   unsigned char *out)
 {
-    if (is_bad_sha_info(info) || keylen < 0 || (keylen > 0 && !key) ||
+    if (is_bad_hmac_info(info) || keylen < 0 || (keylen > 0 && !key) ||
         msglen < 0 || (msglen > 0 && !msg) || !out)
     {
         return;
