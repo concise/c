@@ -12,14 +12,14 @@ void sha256_feed(sha256_context *, U32, const U8 *);
 void sha256_done(const sha256_context *, U8 *);
 void sha256_hash(U32, const U8 *, U8 *);
 
-#define ROTL(a, b)      (((a) << (b)) | ((a) >> (32-(b))))
-#define ROTR(a, b)      (((a) >> (b)) | ((a) << (32-(b))))
+#define ROTR(a, b)      ((((a)&0xffffffff)>>(b))|(((a)<<(32-(b)))&0xffffffff))
+#define SHR(a, b)       (((a)&0xffffffff)>>(b))
 #define Ch(x, y, z)     (((x) & (y)) ^ (~(x) & (z)))
-#define Maj(x, y, z)    (((x) & (y)) ^ ((x) & (z)) ^ ((y) & (z)))
+#define Maj(x, y, z)    (((x) & (y)) ^ ( (x) & (z)) ^ ((y) & (z)))
 #define S0(x)           (ROTR(x,  2) ^ ROTR(x, 13) ^ ROTR(x, 22))
 #define S1(x)           (ROTR(x,  6) ^ ROTR(x, 11) ^ ROTR(x, 25))
-#define s0(x)           (ROTR(x,  7) ^ ROTR(x, 18) ^ ((x) >>  3))
-#define s1(x)           (ROTR(x, 17) ^ ROTR(x, 19) ^ ((x) >> 10))
+#define Q0(x)           (ROTR(x,  7) ^ ROTR(x, 18) ^  SHR(x,  3))
+#define Q1(x)           (ROTR(x, 17) ^ ROTR(x, 19) ^  SHR(x, 10))
 
 static const U32 K[64] = {
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1,
@@ -66,8 +66,8 @@ static void process_one_block(sha256_context *ctx, const U8 *data)
                (data[j + 3]      );
     }
     for ( ; i < 64; ++i) {
-        m[i] = (s1(m[i -  2]) + m[i -  7] +
-                s0(m[i - 15]) + m[i - 16]) & 0xffffffff;
+        m[i] = (Q1(m[i -  2]) + m[i -  7] +
+                Q0(m[i - 15]) + m[i - 16]) & 0xffffffff;
     }
 
     a = ctx->runninghash[0];
