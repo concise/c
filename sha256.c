@@ -63,11 +63,11 @@ static void process_one_block(sha256_context *ctx, const U8 *data)
         m[i] = (data[j    ] << 24) |
                (data[j + 1] << 16) |
                (data[j + 2] <<  8) |
-               (data[j + 3]      );
+               (data[j + 3]      ) ;
     }
     for ( ; i < 64; ++i) {
-        m[i] = (Q1(m[i -  2]) + m[i -  7] +
-                Q0(m[i - 15]) + m[i - 16]) & 0xffffffff;
+        m[i] = Q1(m[i -  2]) + m[i -  7] +
+               Q0(m[i - 15]) + m[i - 16] ;
     }
 
     a = ctx->runninghash[0];
@@ -80,26 +80,26 @@ static void process_one_block(sha256_context *ctx, const U8 *data)
     h = ctx->runninghash[7];
 
     for (i = 0; i < 64; ++i) {
-        t1 = (h + S1(e) + Ch(e,f,g) + K[i] + m[i]) & 0xffffffff;
-        t2 = (S0(a) + Maj(a, b, c)) & 0xffffffff;
+        t1 = h + S1(e) + Ch(e,f,g) + K[i] + m[i];
+        t2 = S0(a) + Maj(a, b, c);
         h = g;
         g = f;
         f = e;
-        e = (d + t1) & 0xffffffff;
+        e = d + t1;
         d = c;
         c = b;
         b = a;
-        a = (t1 + t2) & 0xffffffff;
+        a = t1 + t2;
     }
 
-    ctx->runninghash[0] = (a + ctx->runninghash[0]) & 0xffffffff;
-    ctx->runninghash[1] = (b + ctx->runninghash[1]) & 0xffffffff;
-    ctx->runninghash[2] = (c + ctx->runninghash[2]) & 0xffffffff;
-    ctx->runninghash[3] = (d + ctx->runninghash[3]) & 0xffffffff;
-    ctx->runninghash[4] = (e + ctx->runninghash[4]) & 0xffffffff;
-    ctx->runninghash[5] = (f + ctx->runninghash[5]) & 0xffffffff;
-    ctx->runninghash[6] = (g + ctx->runninghash[6]) & 0xffffffff;
-    ctx->runninghash[7] = (h + ctx->runninghash[7]) & 0xffffffff;
+    ctx->runninghash[0] += a;
+    ctx->runninghash[1] += b;
+    ctx->runninghash[2] += c;
+    ctx->runninghash[3] += d;
+    ctx->runninghash[4] += e;
+    ctx->runninghash[5] += f;
+    ctx->runninghash[6] += g;
+    ctx->runninghash[7] += h;
 }
 
 static void add(U32 *bignumber, U32 incr)
