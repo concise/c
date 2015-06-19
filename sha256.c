@@ -42,15 +42,15 @@ void sha256_init(sha256_context *ctx)
     ctx->nbytes = 0;
 }
 
-#define ROTL(n, x)      ((x << n) | (x >> (32 - n)))
-#define ROTR(n, x)      ((x >> n) | (x << (32 - n)))
-#define SHR(n, x)       (x >> n)
-#define Ch(x, y, z)     ((x & y) ^ (~x & z))
-#define Maj(x, y, z)    ((x & y) ^ (x ^ z) ^ (y & z))
-#define S0(x)           (ROTR(2, x) ^ ROTR(13, x) ^ ROTR(22, x))
-#define S1(x)           (ROTR(6, x) ^ ROTR(11, x) ^ ROTR(25, x))
-#define s0(x)           (ROTR(7, x) ^ ROTR(18, x) ^ SHR(3, x))
-#define s1(x)           (ROTR(17, x) ^ ROTR(19, x) ^ SHR(10, x))
+#define ROTL(n, x)      (((x) << (n)) | ((x) >> (32 - (n))))
+#define ROTR(n, x)      (((x) >> (n)) | ((x) << (32 - (n))))
+#define SHR(n, x)       ((x) >> (n))
+#define Ch(x, y, z)     (((x) & (y)) ^ (~(x) & (z)))
+#define Maj(x, y, z)    (((x) & (y)) ^ ((x) ^ (z)) ^ ((y) & (z)))
+#define S0(x)           (ROTR(2, (x)) ^ ROTR(13, (x)) ^ ROTR(22, (x)))
+#define S1(x)           (ROTR(6, (x)) ^ ROTR(11, (x)) ^ ROTR(25, (x)))
+#define s0(x)           (ROTR(7, (x)) ^ ROTR(18, (x)) ^ SHR(3, (x)))
+#define s1(x)           (ROTR(17, (x)) ^ ROTR(19, (x)) ^ SHR(10, (x)))
 
 static void sha256_step(sha256_context *ctx)
 {
@@ -69,7 +69,10 @@ static void sha256_step(sha256_context *ctx)
 
     // 1. Prepare the message schedule
     for (t = 0; t <= 15; ++t) {
-        W[t] = M[t];
+        W[t] = (M[t * 4    ] << 24) |
+               (M[t * 4 + 1] << 16) |
+               (M[t * 4 + 2] <<  8) |
+               (M[t * 4 + 3]      );
     }
     for (t = 16; t <= 63; ++t) {
         W[t] = s1(W[t - 2]) + W[t - 7] + s0(W[t - 15]) + W[t - 16];
@@ -132,13 +135,25 @@ void sha256_feed(
 void sha256_done(sha256_context *ctx, void *obuf)
 {
     unsigned char *output_buffer = obuf;
+    unsigned char pending_nbytes;
 
     if (!ctx || !obuf) {
         return;
     }
 
-    // TODO now we know the bit length of the input is (8*ctx->nbytes)
-    // TODO add padding bytes after the last inputted message block
-    // TODO execute one more step
-    // TODO return H0 ~ H7
+    pending_nbytes = ctx->nbytes % 64;
+
+    if (pending_nbytes <= 55) {
+        // Put one 0x80 byte and (55 - pending_nbytes) 0x00 bytes
+        // Increase pending_nbytes 1 by 1
+    } else {
+        // Put one 0x80 byte and (119 - pending_nbytes) 0x00 bytes
+        // Increase pending_nbytes 1 by 1
+        // Invoke sha256_step() when pending_nbytes is zero after %= 64
+    }
+    // Put 8 bytes that is MSB-first 64-bit integer of (8 * ctx->nbytes)
+    // Invoke sha256_step()
+
+    // return MSB first 32-byte buffer { H0, H1, ..., H7 }
+    (void) output_buffer;
 }
