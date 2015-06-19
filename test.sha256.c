@@ -1,26 +1,22 @@
 #include "sha256.h"
-#include "hexcodec.h"
 #include <stdio.h>
 
 void test_sha256(void)
 {
-    int c = 0;
+    int c;
+    U8 obuf[32];
     sha256_context ctx;
-    unsigned char obuf[32];
-    char readable_obuf[64];
-    unsigned char tmp;
 
     sha256_init(&ctx);
-
     while ((c = fgetc(stdin)) != EOF) {
-        tmp = c;
-        sha256_feed(&ctx, 1, &tmp);
+        sha256_feed(&ctx, 1, (const U8 *) &c);
     }
-
     sha256_done(&ctx, obuf);
 
-    hexcodec_encode(32, obuf, readable_obuf);
-    printf("%64.64s\n", readable_obuf);
+    for (c = 0; c < 32; ++c) {
+        printf("%02x", obuf[c] & 0xff);
+    }
+    printf("\n");
 }
 
 int main(void)
