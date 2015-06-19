@@ -1,13 +1,4 @@
-typedef struct {
-    void *sha_context;
-    void (*sha_starts)(void *);
-    void (*sha_update)(void *, int, const unsigned char *);
-    void (*sha_finish)(void *, unsigned char *);
-    unsigned char *bufferB;
-    unsigned char *bufferL;
-    int B;
-    int L;
-} sha_info_t;
+#include "hmac.h"
 
 static int is_bad_sha_info(const sha_info_t *info)
 {
