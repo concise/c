@@ -37,7 +37,7 @@ static void copy_context_from_to(
     dst->runninghash[7] = src->runninghash[7];
     dst->totalbitlen[0] = src->totalbitlen[0];
     dst->totalbitlen[1] = src->totalbitlen[1];
-    for (i = 0; i < 64; ++i) {
+    for (i = 0; i <= 63; ++i) {
         dst->msgchunk[i] = src->msgchunk[i];
     }
     dst->msgchunklen = src->msgchunklen;
@@ -45,15 +45,15 @@ static void copy_context_from_to(
 
 static void process_one_block(sha256_context *ctx, const U8 *data)
 {
-    U32 a, b, c, d, e, f, g, h, i, j, t1, t2, m[64];
+    U32 a, b, c, d, e, f, g, h, i, t1, t2, m[64];
 
-    for (i = 0, j = 0; i < 16; ++i, j += 4) {
-        m[i] = (data[j    ] << 24) |
-               (data[j + 1] << 16) |
-               (data[j + 2] <<  8) |
-               (data[j + 3]      ) ;
+    for (i = 0; i <= 15; ++i) {
+        m[i] = (data[i * 4 + 0] << 24) |
+               (data[i * 4 + 1] << 16) |
+               (data[i * 4 + 2] <<  8) |
+               (data[i * 4 + 3] <<  0) ;
     }
-    for ( ; i < 64; ++i) {
+    for (i = 16; i <= 63; ++i) {
         m[i] = Q1(m[i -  2]) + m[i -  7] +
                Q0(m[i - 15]) + m[i - 16] ;
     }
@@ -67,7 +67,7 @@ static void process_one_block(sha256_context *ctx, const U8 *data)
     g = ctx->runninghash[6];
     h = ctx->runninghash[7];
 
-    for (i = 0; i < 64; ++i) {
+    for (i = 0; i <= 63; ++i) {
         t1 = h + S1(e) + Ch(e,f,g) + K[i] + m[i];
         t2 = S0(a) + Maj(a, b, c);
         h = g;
@@ -189,11 +189,11 @@ void sha256_done(const sha256_context *ctx, U8 *obuf)
     process_one_block(&ctx_, ctx_.msgchunk);
 
     /* Dump the resulting 32-byte hash value */
-    for (i = 0; i < 8; ++i) {
-        obuf[4 * i + 0] = ctx_.runninghash[i] >> 24;
-        obuf[4 * i + 1] = ctx_.runninghash[i] >> 16;
-        obuf[4 * i + 2] = ctx_.runninghash[i] >>  8;
-        obuf[4 * i + 3] = ctx_.runninghash[i] >>  0;
+    for (i = 0; i <= 7; ++i) {
+        obuf[i * 4 + 0] = ctx_.runninghash[i] >> 24;
+        obuf[i * 4 + 1] = ctx_.runninghash[i] >> 16;
+        obuf[i * 4 + 2] = ctx_.runninghash[i] >>  8;
+        obuf[i * 4 + 3] = ctx_.runninghash[i] >>  0;
     }
 }
 
