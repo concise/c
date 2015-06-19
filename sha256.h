@@ -2,9 +2,9 @@
 #define __SHA256_H__
 
 typedef struct {
-    unsigned long H[8];
-    unsigned long long nbytes;
-    unsigned char msgbuffer[64];
+    unsigned long H[8];     /* Intermediate hash value (8 32-bit words) */
+    unsigned long long L;   /* Byte length of the message we are hashing */
+    unsigned char M[64];    /* The last unprocessed message chunk */
 } sha256_context;
 
 void sha256_init(sha256_context *);

@@ -6,6 +6,10 @@
  * http://csrc.nist.gov/publications/fips/fips180-4/fips-180-4.pdf
  */
 
+/*
+ * TODO do not use "unsigned long long"
+ */
+
 #include "sha256.h"
 
 static const unsigned long K[64] = {
@@ -24,22 +28,22 @@ static const unsigned long K[64] = {
     0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 };
 
-void sha256_init(sha256_context *ctx)
+void sha256_init(sha256_context *x)
 {
-    if (!ctx) {
+    if (!x) {
         return;
     }
 
-    ctx->H[0] = 0x6a09e667;
-    ctx->H[1] = 0xbb67ae85;
-    ctx->H[2] = 0x3c6ef372;
-    ctx->H[3] = 0xa54ff53a;
-    ctx->H[4] = 0x510e527f;
-    ctx->H[5] = 0x9b05688c;
-    ctx->H[6] = 0x1f83d9ab;
-    ctx->H[7] = 0x5be0cd19;
+    x->H[0] = 0x6a09e667;
+    x->H[1] = 0xbb67ae85;
+    x->H[2] = 0x3c6ef372;
+    x->H[3] = 0xa54ff53a;
+    x->H[4] = 0x510e527f;
+    x->H[5] = 0x9b05688c;
+    x->H[6] = 0x1f83d9ab;
+    x->H[7] = 0x5be0cd19;
 
-    ctx->nbytes = 0;
+    x->L = 0;
 }
 
 #define ROTL(n, x)      (((x) << (n)) | ((x) >> (32 - (n))))
@@ -52,43 +56,36 @@ void sha256_init(sha256_context *ctx)
 #define s0(x)           (ROTR(7, (x)) ^ ROTR(18, (x)) ^ SHR(3, (x)))
 #define s1(x)           (ROTR(17, (x)) ^ ROTR(19, (x)) ^ SHR(10, (x)))
 
-static void sha256_step(sha256_context *ctx)
+static void sha256_step(sha256_context *x, const unsigned char *M)
 {
     unsigned long W[64];
     unsigned long a, b, c, d, e, f, g, h, T1, T2;
-    unsigned long *H;
-    unsigned char *M;
     int t;
 
-    if (!ctx) {
+    if (!x) {
         return;
     }
 
-    H = ctx->H;         // uint32_t[8]
-    M = ctx->msgbuffer; // uint8_t[64]
-
-    // 1. Prepare the message schedule
+    /* 1. Prepare the message schedule */
     for (t = 0; t <= 15; ++t) {
-        W[t] = (M[t * 4    ] << 24) |
-               (M[t * 4 + 1] << 16) |
-               (M[t * 4 + 2] <<  8) |
-               (M[t * 4 + 3]      );
+        W[t] = (M[t * 4    ] << 24) | (M[t * 4 + 1] << 16) |
+               (M[t * 4 + 2] <<  8) | (M[t * 4 + 3]      );
     }
     for (t = 16; t <= 63; ++t) {
         W[t] = s1(W[t - 2]) + W[t - 7] + s0(W[t - 15]) + W[t - 16];
     }
 
-    // 2. Initialize the eight working variables
-    a = H[0];
-    b = H[1];
-    c = H[2];
-    d = H[3];
-    e = H[4];
-    f = H[5];
-    g = H[6];
-    h = H[7];
+    /* 2. Initialize the eight working variables */
+    a = x->H[0];
+    b = x->H[1];
+    c = x->H[2];
+    d = x->H[3];
+    e = x->H[4];
+    f = x->H[5];
+    g = x->H[6];
+    h = x->H[7];
 
-    // 3. repeat some statements 64 times
+    /* 3. repeat some statements 64 times */
     for (t = 0; t < 64; ++t) {
         T1 = h + S1(e) + Ch(e, f, g) + K[t] + W[t];
         T2 = S0(a) + Maj(a, b, c);
@@ -102,58 +99,82 @@ static void sha256_step(sha256_context *ctx)
         a = T1 + T2;
     }
 
-    // 4. update the H0 ~ H7 intermediate hash value
-    H[0] += a;
-    H[1] += b;
-    H[2] += c;
-    H[3] += d;
-    H[4] += e;
-    H[5] += f;
-    H[6] += g;
-    H[7] += h;
+    /* 4. update the H0 ~ H7 intermediate hash value */
+    x->H[0] += a;
+    x->H[1] += b;
+    x->H[2] += c;
+    x->H[3] += d;
+    x->H[4] += e;
+    x->H[5] += f;
+    x->H[6] += g;
+    x->H[7] += h;
 }
 
-void sha256_feed(
-        sha256_context *ctx, unsigned long long ilen, const void *ibuf)
+void sha256_feed(sha256_context *x, unsigned long long ilen, const void *ibuf)
 {
     const unsigned char *msg_chunk_ptr = ibuf;
     unsigned long long i;
 
-    if (!ctx || !ibuf) {
+    if (!x || !ibuf) {
         return;
     }
 
-    for (i = 0; i < ilen && ctx->nbytes < 0x1fffffffffffffffull; ++i) {
-        ctx->msgbuffer[ctx->nbytes % 64] = msg_chunk_ptr[i];
-        ctx->nbytes += 1;
-        if (ctx->nbytes % 64 == 0) {
-            sha256_step(ctx);
+    for (i = 0; i < ilen && x->L < 0x1fffffffffffffffull; ++i) {
+        x->M[x->L % 64] = msg_chunk_ptr[i];
+        x->L += 1;
+        if (x->L % 64 == 0) {
+            sha256_step(x, x->M);
         }
     }
 }
 
-void sha256_done(sha256_context *ctx, void *obuf)
+void sha256_done(sha256_context *x, void *obuf)
 {
+    /* TODO Refactor to accept a (const sha256_context *) pointer */
+
     unsigned char *output_buffer = obuf;
     unsigned char pending_nbytes;
+    int i;
 
-    if (!ctx || !obuf) {
+    if (!x || !obuf) {
         return;
     }
 
-    pending_nbytes = ctx->nbytes % 64;
+    pending_nbytes = x->L % 64;
 
-    if (pending_nbytes <= 55) {
-        // Put one 0x80 byte and (55 - pending_nbytes) 0x00 bytes
-        // Increase pending_nbytes 1 by 1
+    if (pending_nbytes >= 56) {
+        x->M[pending_nbytes] = 0x80;
+        pending_nbytes += 1;
+        while (pending_nbytes < 64) {
+            x->M[pending_nbytes] = 0x00;
+            pending_nbytes += 1;
+        }
+        sha256_step(x, x->M);
+        pending_nbytes = 0;
     } else {
-        // Put one 0x80 byte and (119 - pending_nbytes) 0x00 bytes
-        // Increase pending_nbytes 1 by 1
-        // Invoke sha256_step() when pending_nbytes is zero after %= 64
+        x->M[pending_nbytes] = 0x80;
+        pending_nbytes += 1;
     }
-    // Put 8 bytes that is MSB-first 64-bit integer of (8 * ctx->nbytes)
-    // Invoke sha256_step()
 
-    // return MSB first 32-byte buffer { H0, H1, ..., H7 }
-    (void) output_buffer;
+    while (pending_nbytes < 56) {
+        x->M[pending_nbytes] = 0x00;
+        pending_nbytes += 1;
+    }
+    x->M[pending_nbytes    ] = ((8 * x->L) >> 56) % 256;
+    x->M[pending_nbytes + 1] = ((8 * x->L) >> 48) % 256;
+    x->M[pending_nbytes + 2] = ((8 * x->L) >> 40) % 256;
+    x->M[pending_nbytes + 3] = ((8 * x->L) >> 32) % 256;
+    x->M[pending_nbytes + 4] = ((8 * x->L) >> 24) % 256;
+    x->M[pending_nbytes + 5] = ((8 * x->L) >> 16) % 256;
+    x->M[pending_nbytes + 6] = ((8 * x->L) >>  8) % 256;
+    x->M[pending_nbytes + 7] = ((8 * x->L)      ) % 256;
+    sha256_step(x, x->M);
+
+    /* return MSB-first 32-byte result { H0, H1, ..., H7 } */
+    for (i = 0; i <= 7; ++i) {
+        output_buffer[8 * i    ] = (x->H[i] >> 24);
+        output_buffer[8 * i + 1] = (x->H[i] >> 16);
+        output_buffer[8 * i + 2] = (x->H[i] >>  8);
+        output_buffer[8 * i + 3] = (x->H[i]      );
+    }
 }
