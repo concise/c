@@ -1,6 +1,5 @@
 typedef unsigned char U8;
 typedef unsigned long U32;
-
 typedef struct {
     U32 runninghash[8];    /* The intermediate hash value (H0, ..., H7) */
     U32 totalbitlen[2];    /* The bit length of the input message (l)   */
@@ -61,10 +60,10 @@ static void process_one_block(sha256_context *ctx, const U8 *data)
     U32 a, b, c, d, e, f, g, h, i, j, t1, t2, m[64];
 
     for (i = 0, j = 0; i < 16; ++i, j += 4) {
-        m[i] = ((data[j    ] << 24) |
-                (data[j + 1] << 16) |
-                (data[j + 2] <<  8) |
-                (data[j + 3]      )) & 0xffffffff;
+        m[i] = (data[j    ] << 24) |
+               (data[j + 1] << 16) |
+               (data[j + 2] <<  8) |
+               (data[j + 3]      );
     }
     for ( ; i < 64; ++i) {
         m[i] = (s1(m[i -  2]) + m[i -  7] +
@@ -160,49 +159,49 @@ void sha256_feed(sha256_context *ctx, U32 ilen, const U8 *ibuf)
 void sha256_done(const sha256_context *ctx, U8 *obuf)
 {
     sha256_context ctx_;
-    U32 i;
+    U8 i;
 
     if (!ctx || !obuf) {
         return;
     }
 
+    /* Create another working context, not polluting the original one */
     copy_context_from_to(ctx, &ctx_);
 
-    /* Append one 0x80 and zero or more 0x00 */
+    /* Append one 0x80 byte */
     i = ctx_.msgchunklen;
-    if (ctx_.msgchunklen < 56) {
-        ctx_.msgchunk[i++] = 0x80;
-        while (i < 56) {
-            ctx_.msgchunk[i++] = 0x00;
-        }
-    } else {
-        ctx_.msgchunk[i++] = 0x80;
+    ctx_.msgchunk[i++] = 0x80;
+
+    /* Append some number of 0x00 bytes */
+    if (i >= 57) {
         while (i < 64) {
             ctx_.msgchunk[i++] = 0x00;
         }
         process_one_block(&ctx_, ctx_.msgchunk);
-        for (i = 0; i < 56; ++i) {
-            ctx_.msgchunk[i] = 0;
-        }
+        i = 0;
+    }
+    while (i < 56) {
+        ctx_.msgchunk[i++] = 0x00;
     }
 
-    /* Append the message bit length as a big-endian 64-bit integer */
+    /* Append eight bytes representing the message bit length (big-endian) */
     add(ctx_.totalbitlen, ctx_.msgchunklen * 8);
     ctx_.msgchunk[56] = ctx_.totalbitlen[0] >> 24;
     ctx_.msgchunk[57] = ctx_.totalbitlen[0] >> 16;
     ctx_.msgchunk[58] = ctx_.totalbitlen[0] >>  8;
-    ctx_.msgchunk[59] = ctx_.totalbitlen[0]      ;
+    ctx_.msgchunk[59] = ctx_.totalbitlen[0] >>  0;
     ctx_.msgchunk[60] = ctx_.totalbitlen[1] >> 24;
     ctx_.msgchunk[61] = ctx_.totalbitlen[1] >> 16;
     ctx_.msgchunk[62] = ctx_.totalbitlen[1] >>  8;
-    ctx_.msgchunk[63] = ctx_.totalbitlen[1]      ;
+    ctx_.msgchunk[63] = ctx_.totalbitlen[1] >>  0;
     process_one_block(&ctx_, ctx_.msgchunk);
 
+    /* Dump the resulting 32-byte hash value */
     for (i = 0; i < 8; ++i) {
-        obuf[4 * i + 0] = (ctx_.runninghash[i] >> 24) & 0x000000ff;
-        obuf[4 * i + 1] = (ctx_.runninghash[i] >> 16) & 0x000000ff;
-        obuf[4 * i + 2] = (ctx_.runninghash[i] >>  8) & 0x000000ff;
-        obuf[4 * i + 3] = (ctx_.runninghash[i]      ) & 0x000000ff;
+        obuf[4 * i + 0] = ctx_.runninghash[i] >> 24;
+        obuf[4 * i + 1] = ctx_.runninghash[i] >> 16;
+        obuf[4 * i + 2] = ctx_.runninghash[i] >>  8;
+        obuf[4 * i + 3] = ctx_.runninghash[i] >>  0;
     }
 }
 
