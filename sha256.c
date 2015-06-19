@@ -97,8 +97,7 @@ static void process_one_block(sha256_context *ctx, const U8 *data)
 
 static void add(U32 *bignumber, U32 incr)
 {
-    /*
-     *          high bits           low bits
+    /*          high bits           low bits
      *      +--------------+    +--------------+
      *      | bignumber[0] |    | bignumber[1] |
      *      +--------------+    +--------------+
@@ -109,11 +108,10 @@ static void add(U32 *bignumber, U32 incr)
     incr &= 0xffffffff;
 
     bignumber[1] += incr;
-    bignumber[1] &= 0xffffffff;
 
     if (incr >= space) {
+        bignumber[1] &= 0xffffffff;
         bignumber[0] += 1;
-        bignumber[0] &= 0xffffffff;
     }
 }
 
@@ -199,10 +197,10 @@ void sha256_done(const sha256_context *ctx, U8 *obuf)
 
     /* Dump the resulting 32-byte hash value */
     for (i = 0; i <= 7; ++i) {
-        obuf[i * 4 + 0] = ctx_.runninghash[i] >> 24;
-        obuf[i * 4 + 1] = ctx_.runninghash[i] >> 16;
-        obuf[i * 4 + 2] = ctx_.runninghash[i] >>  8;
-        obuf[i * 4 + 3] = ctx_.runninghash[i] >>  0;
+        obuf[i * 4 + 0] = (ctx_.runninghash[i] >> 24) & 0xff;
+        obuf[i * 4 + 1] = (ctx_.runninghash[i] >> 16) & 0xff;
+        obuf[i * 4 + 2] = (ctx_.runninghash[i] >>  8) & 0xff;
+        obuf[i * 4 + 3] = (ctx_.runninghash[i] >>  0) & 0xff;
     }
 }
 
