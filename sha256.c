@@ -23,29 +23,6 @@ static const U32 K[64] = {
     0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 };
 
-static void copy_context_from_to(const sha256_context_t *src, sha256_context_t *dst)
-{
-    unsigned char i;
-
-    dst->runninghash[0] = src->runninghash[0];
-    dst->runninghash[1] = src->runninghash[1];
-    dst->runninghash[2] = src->runninghash[2];
-    dst->runninghash[3] = src->runninghash[3];
-    dst->runninghash[4] = src->runninghash[4];
-    dst->runninghash[5] = src->runninghash[5];
-    dst->runninghash[6] = src->runninghash[6];
-    dst->runninghash[7] = src->runninghash[7];
-
-    dst->totalbitlen[0] = src->totalbitlen[0];
-    dst->totalbitlen[1] = src->totalbitlen[1];
-
-    for (i = 0; i <= 63; ++i) {
-        dst->msgchunk[i] = src->msgchunk[i];
-    }
-
-    dst->msgchunklen = src->msgchunklen;
-}
-
 static void process_one_block(sha256_context_t *ctx, const unsigned char *data)
 {
     U32 a, b, c, d, e, f, g, h, t1, t2, m[64];
@@ -168,7 +145,7 @@ void sha256_finish(void *_ctx, unsigned char *obuf)
     }
 
     /* Create another working context, not polluting the original one */
-    copy_context_from_to(ctx, &ctx_);
+    ctx_ = *ctx;
 
     /* Append one 0x80 byte */
     i = ctx_.msgchunklen;
