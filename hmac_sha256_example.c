@@ -4,7 +4,7 @@
 #include "sha256.h"
 
 typedef struct {
-    hmac_info_t hmac_info;
+    hash_info_t hash_info;
     sha256_context_t sha256_ctx;
     unsigned char bufferBarr[SHA256_BLOCK_SIZE];
     unsigned char bufferLarr[SHA256_OUTPUT_SIZE];
@@ -26,16 +26,16 @@ void hmac_sha256_starts(
         return;
     }
 
-    ctx->hmac_info.sha_context = &ctx->sha256_ctx;
-    ctx->hmac_info.sha_starts  = &sha256_starts;
-    ctx->hmac_info.sha_update  = &sha256_update;
-    ctx->hmac_info.sha_finish  = &sha256_finish;
-    ctx->hmac_info.bufferB     = ctx->bufferBarr;
-    ctx->hmac_info.bufferL     = ctx->bufferLarr;
-    ctx->hmac_info.B           = SHA256_BLOCK_SIZE;
-    ctx->hmac_info.L           = SHA256_OUTPUT_SIZE;
+    ctx->hash_info.hash_context = &ctx->sha256_ctx;
+    ctx->hash_info.hash_starts  = &sha256_starts;
+    ctx->hash_info.hash_update  = &sha256_update;
+    ctx->hash_info.hash_finish  = &sha256_finish;
+    ctx->hash_info.bufferB     = ctx->bufferBarr;
+    ctx->hash_info.bufferL     = ctx->bufferLarr;
+    ctx->hash_info.B           = SHA256_BLOCK_SIZE;
+    ctx->hash_info.L           = SHA256_OUTPUT_SIZE;
 
-    hmac_starts(&ctx->hmac_info, keylen, key);
+    hmac_starts(&ctx->hash_info, keylen, key);
 }
 
 void hmac_sha256_update(
@@ -45,7 +45,7 @@ void hmac_sha256_update(
         return;
     }
 
-    hmac_update(&ctx->hmac_info, msglen, msg);
+    hmac_update(&ctx->hash_info, msglen, msg);
 }
 
 void hmac_sha256_finish(
@@ -55,28 +55,29 @@ void hmac_sha256_finish(
         return;
     }
 
-    hmac_finish(&ctx->hmac_info, out);
+    hmac_finish(&ctx->hash_info, out);
 }
 
 void hmac_sha256(
-        hmac_sha256_context_t *ctx, int keylen, const unsigned char *key,
-                                    int msglen, const unsigned char *msg,
-                                    unsigned char *out)
+        hmac_sha256_context_t *ctx,
+        int keylen, const unsigned char *key,
+        int msglen, const unsigned char *msg,
+        unsigned char *out)
 {
     if (!ctx) {
         return;
     }
 
-    ctx->hmac_info.sha_context = &ctx->sha256_ctx;
-    ctx->hmac_info.sha_starts  = &sha256_starts;
-    ctx->hmac_info.sha_update  = &sha256_update;
-    ctx->hmac_info.sha_finish  = &sha256_finish;
-    ctx->hmac_info.bufferB     = ctx->bufferBarr;
-    ctx->hmac_info.bufferL     = ctx->bufferLarr;
-    ctx->hmac_info.B           = SHA256_BLOCK_SIZE;
-    ctx->hmac_info.L           = SHA256_OUTPUT_SIZE;
+    ctx->hash_info.hash_context = &ctx->sha256_ctx;
+    ctx->hash_info.hash_starts  = &sha256_starts;
+    ctx->hash_info.hash_update  = &sha256_update;
+    ctx->hash_info.hash_finish  = &sha256_finish;
+    ctx->hash_info.bufferB     = ctx->bufferBarr;
+    ctx->hash_info.bufferL     = ctx->bufferLarr;
+    ctx->hash_info.B           = SHA256_BLOCK_SIZE;
+    ctx->hash_info.L           = SHA256_OUTPUT_SIZE;
 
-    hmac(&ctx->hmac_info, keylen, key, msglen, msg, out);
+    hmac(&ctx->hash_info, keylen, key, msglen, msg, out);
 }
 
 
