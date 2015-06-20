@@ -1,6 +1,9 @@
 #ifndef __SHA256_H__
 #define __SHA256_H__
 
+#define SHA256_BLOCK_SIZE 64
+#define SHA256_OUTPUT_SIZE 32
+
 typedef unsigned long int U32;  /* Make sure it can hold 0 ~ 0xffffffff     */
 
 typedef struct {
