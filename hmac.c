@@ -73,12 +73,6 @@ void hmac(const hash_info_t *info, int keylen, const unsigned char *key,
                                    int msglen, const unsigned char *msg,
                                    unsigned char *out)
 {
-    if (is_bad_hash_info(info) || keylen < 0 || (keylen > 0 && !key) ||
-        msglen < 0 || (msglen > 0 && !msg) || !out)
-    {
-        return;
-    }
-
     hmac_starts(info, keylen, key);
     hmac_update(info, msglen, msg);
     hmac_finish(info, out);
