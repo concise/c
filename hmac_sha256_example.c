@@ -64,20 +64,9 @@ void hmac_sha256(
         int msglen, const unsigned char *msg,
         unsigned char *out)
 {
-    if (!ctx) {
-        return;
-    }
-
-    ctx->hash_info.hash_context = &ctx->sha256_ctx;
-    ctx->hash_info.hash_starts  = &sha256_starts;
-    ctx->hash_info.hash_update  = &sha256_update;
-    ctx->hash_info.hash_finish  = &sha256_finish;
-    ctx->hash_info.bufferB     = ctx->bufferBarr;
-    ctx->hash_info.bufferL     = ctx->bufferLarr;
-    ctx->hash_info.B           = SHA256_BLOCK_SIZE;
-    ctx->hash_info.L           = SHA256_OUTPUT_SIZE;
-
-    hmac(&ctx->hash_info, keylen, key, msglen, msg, out);
+    hmac_sha256_starts(ctx, keylen, key);
+    hmac_sha256_update(ctx, msglen, msg);
+    hmac_sha256_finish(ctx, out);
 }
 
 
