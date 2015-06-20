@@ -88,6 +88,7 @@ static void increase_by(sha256_word_t *bignumber, sha256_word_t incr)
     if (incr >= space) {
         bignumber[1] &= 0xffffffff;
         bignumber[0] += 1;
+        bignumber[0] &= 0xffffffff;
     }
 }
 
