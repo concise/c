@@ -9,7 +9,7 @@
 #define Q0(x)           (ROTR(x,  7) ^ ROTR(x, 18) ^  SHR(x,  3))
 #define Q1(x)           (ROTR(x, 17) ^ ROTR(x, 19) ^  SHR(x, 10))
 
-static const U32 K[64] = {
+static const sha256_word_t K[64] = {
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1,
     0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
     0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786,
@@ -25,7 +25,7 @@ static const U32 K[64] = {
 
 static void process_one_block(sha256_context_t *ctx, const unsigned char *data)
 {
-    U32 a, b, c, d, e, f, g, h, t1, t2, m[64];
+    sha256_word_t a, b, c, d, e, f, g, h, t1, t2, m[64];
     unsigned char i;
 
     for (i = 0; i <= 15; ++i) {
@@ -71,14 +71,14 @@ static void process_one_block(sha256_context_t *ctx, const unsigned char *data)
     ctx->runninghash[7] += h;
 }
 
-static void add(U32 *bignumber, U32 incr)
+static void add(sha256_word_t *bignumber, sha256_word_t incr)
 {
     /*          high bits           low bits
      *      +--------------+    +--------------+
      *      | bignumber[0] |    | bignumber[1] |
      *      +--------------+    +--------------+
      */
-    U32 space;
+    sha256_word_t space;
 
     space = 0xffffffff - bignumber[1];
     incr &= 0xffffffff;
