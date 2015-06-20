@@ -71,7 +71,7 @@ static void process_one_block(sha256_context_t *ctx, const unsigned char *data)
     ctx->runninghash[7] += h;
 }
 
-static void add(sha256_word_t *bignumber, sha256_word_t incr)
+static void increase_by(sha256_word_t *bignumber, sha256_word_t incr)
 {
     /*          high bits           low bits
      *      +--------------+    +--------------+
@@ -128,7 +128,7 @@ void sha256_update(void *_ctx, int ilen, const unsigned char *ibuf)
         ctx->msgchunklen++;
         if (ctx->msgchunklen == 64) {
             process_one_block(ctx, ctx->msgchunk);
-            add(ctx->totalbitlen, 512);
+            increase_by(ctx->totalbitlen, 512);
             ctx->msgchunklen = 0;
         }
     }
@@ -164,7 +164,7 @@ void sha256_finish(void *_ctx, unsigned char *obuf)
     }
 
     /* Append eight bytes representing the message bit length (big-endian) */
-    add(ctx_.totalbitlen, ctx_.msgchunklen * 8);
+    increase_by(ctx_.totalbitlen, ctx_.msgchunklen * 8);
     ctx_.msgchunk[56] = ctx_.totalbitlen[0] >> 24;
     ctx_.msgchunk[57] = ctx_.totalbitlen[0] >> 16;
     ctx_.msgchunk[58] = ctx_.totalbitlen[0] >>  8;
