@@ -11,7 +11,7 @@ typedef struct {
     U32 totalbitlen[2];         /* The bit length (l) of the input message  */
     unsigned char msgchunk[64]; /* The last unprocessed message chunk       */
     unsigned char msgchunklen;  /* The byte length of the unprocessed chunk */
-} sha256_context;
+} sha256_context_t;
 
 void sha256_starts(void *);
 void sha256_update(void *, int, const unsigned char *);

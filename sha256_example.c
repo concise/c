@@ -3,12 +3,12 @@
 
 void super_sha256(void)
 {
-    /* The input length is 1 GiB */
     unsigned long int i;
     unsigned char obuf[32];
-    sha256_context ctx;
+    sha256_context_t ctx;
     unsigned char test_vector[64] = "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmno";
 
+    /* The input length is 1 GiB */
     sha256_starts(&ctx);
     for (i = 1; i <= 16777216; ++i) {
         sha256_update(&ctx, 64, test_vector);
@@ -25,7 +25,7 @@ void test_sha256(void)
 {
     int c;
     unsigned char obuf[32];
-    sha256_context ctx;
+    sha256_context_t ctx;
 
     sha256_starts(&ctx);
     while ((c = fgetc(stdin)) != EOF) {

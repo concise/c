@@ -23,7 +23,7 @@ static const U32 K[64] = {
     0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 };
 
-static void copy_context_from_to(const sha256_context *src, sha256_context *dst)
+static void copy_context_from_to(const sha256_context_t *src, sha256_context_t *dst)
 {
     unsigned char i;
 
@@ -46,7 +46,7 @@ static void copy_context_from_to(const sha256_context *src, sha256_context *dst)
     dst->msgchunklen = src->msgchunklen;
 }
 
-static void process_one_block(sha256_context *ctx, const unsigned char *data)
+static void process_one_block(sha256_context_t *ctx, const unsigned char *data)
 {
     U32 a, b, c, d, e, f, g, h, t1, t2, m[64];
     unsigned char i;
@@ -116,7 +116,7 @@ static void add(U32 *bignumber, U32 incr)
 
 void sha256_starts(void *_ctx)
 {
-    sha256_context *ctx = _ctx;
+    sha256_context_t *ctx = _ctx;
 
     if (!ctx) {
         return;
@@ -139,7 +139,7 @@ void sha256_starts(void *_ctx)
 
 void sha256_update(void *_ctx, int ilen, const unsigned char *ibuf)
 {
-    sha256_context *ctx = _ctx;
+    sha256_context_t *ctx = _ctx;
     int i;
 
     if (!ctx || (ilen && !ibuf)) {
@@ -159,8 +159,8 @@ void sha256_update(void *_ctx, int ilen, const unsigned char *ibuf)
 
 void sha256_finish(void *_ctx, unsigned char *obuf)
 {
-    sha256_context *ctx = _ctx;
-    sha256_context ctx_;
+    sha256_context_t *ctx = _ctx;
+    sha256_context_t ctx_;
     unsigned char i;
 
     if (!ctx || !obuf) {
@@ -209,7 +209,7 @@ void sha256_finish(void *_ctx, unsigned char *obuf)
 
 void sha256(int ilen, const unsigned char *ibuf, unsigned char *obuf)
 {
-    sha256_context ctx_;
+    sha256_context_t ctx_;
 
     if ((ilen && !ibuf) || !obuf) {
         return;
