@@ -1,3 +1,4 @@
+#include "hmac.h"
 #include "hmacsha256.h"
 #include <stdio.h>
 

@@ -1,3 +1,6 @@
+#ifndef __HMACSHA256_H__
+#define __HMACSHA256_H__
+
 #include "hmac.h"
 #include "sha256.h"
 
@@ -14,3 +17,5 @@ void hmacsha256(
     int, const unsigned char *,
     int, const unsigned char *,
     unsigned char *);
+
+#endif

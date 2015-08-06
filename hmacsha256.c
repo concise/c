@@ -1,3 +1,4 @@
+#include "hmac.h"
 #include "hmacsha256.h"
 
 void hmacsha256_init(hmacsha256_context_t *ctx)
