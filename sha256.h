@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define SHA256_BLOCK_SIZE 64
+#define SHA256_IBLOCK_SIZE 64
 #define SHA256_OUTPUT_SIZE 32
 
 typedef uint32_t sha256_word_t; /* to hold 0x00000000 ~ 0xffffffff */
@@ -15,9 +15,8 @@ typedef struct {
     unsigned char msgchunklen;      /* byte length of the unprocessed chunk */
 } sha256_context_t;
 
-void sha256_starts(void *);
+void sha256_begin(void *);
 void sha256_update(void *, int, const unsigned char *);
-void sha256_finish(void *, unsigned char *);
-void sha256       (int, const unsigned char *, unsigned char *);
+void sha256_output(void *, unsigned char *);
 
 #endif

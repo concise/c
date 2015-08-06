@@ -3,20 +3,18 @@
 
 typedef struct {
     void *hash_context;
-    void (*hash_starts)(void *);
+    void (*hash_begin)(void *);
     void (*hash_update)(void *, int, const unsigned char *);
-    void (*hash_finish)(void *, unsigned char *);
-    unsigned char *bufferB;
-    unsigned char *bufferL;
-    int B;
-    int L;
-} hash_info_t;
+    void (*hash_output)(void *, unsigned char *);
+    int B;  // byte-length of an internal block of the underlying hash function
+    int L;  // byte-length of a hashed result from the underlying hash function
+            // for example: L = 32 and B = 64 for SHA-256; note that L <= B
+    unsigned char *workingBufferB; // a B-byte buffer for HMAC computation
+    unsigned char *workingBufferL; // a L-byte buffer for HMAC computation
+} hmac_context_t;
 
-void hmac_starts(const hash_info_t *, int, const unsigned char *);
-void hmac_update(const hash_info_t *, int, const unsigned char *);
-void hmac_finish(const hash_info_t *, unsigned char *);
-void hmac       (const hash_info_t *, int, const unsigned char *,
-                                      int, const unsigned char *,
-                                      unsigned char *);
+void hmac_begin(const hmac_context_t *, int, const unsigned char *);
+void hmac_update(const hmac_context_t *, int, const unsigned char *);
+void hmac_output(const hmac_context_t *, unsigned char *);
 
 #endif

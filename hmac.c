@@ -1,15 +1,16 @@
 #include "hmac.h"
 
-static int is_bad_hash_info(const hash_info_t *info)
+static int is_bad_hash_info(const hmac_context_t *info)
 {
     return !(
-        info && info->hash_context && info->hash_starts && info->hash_update &&
-        info->hash_finish && info->bufferB && info->bufferL &&
+        info && info->hash_context && info->hash_begin && info->hash_update &&
+        info->hash_output && info->workingBufferB && info->workingBufferL &&
         info->B > 0 && info->L > 0 && info->L <= info->B
     );
 }
 
-void hmac_starts(const hash_info_t *info, int keylen, const unsigned char *key)
+void hmac_begin(
+    const hmac_context_t *info, int keylen, const unsigned char *key)
 {
     int i;
 
@@ -18,34 +19,35 @@ void hmac_starts(const hash_info_t *info, int keylen, const unsigned char *key)
     }
 
     if (keylen > info->B) {
-        (*info->hash_starts)(info->hash_context);
+        (*info->hash_begin)(info->hash_context);
         (*info->hash_update)(info->hash_context, keylen, key);
-        (*info->hash_finish)(info->hash_context, info->bufferB);
+        (*info->hash_output)(info->hash_context, info->workingBufferB);
         for (i = info->L; i < info->B; ++i) {
-            info->bufferB[i] = 0x00;
+            info->workingBufferB[i] = 0x00;
         }
     } else {
         for (i = 0; i < keylen; ++i) {
-            info->bufferB[i] = key[i];
+            info->workingBufferB[i] = key[i];
         }
         for (i = keylen; i < info->B; ++i) {
-            info->bufferB[i] = 0x00;
+            info->workingBufferB[i] = 0x00;
         }
     }
 
     for (i = 0; i < info->B; ++i) {
-        info->bufferB[i] ^= 0x36;
+        info->workingBufferB[i] ^= 0x36;
     }
 
-    (*info->hash_starts)(info->hash_context);
-    (*info->hash_update)(info->hash_context, info->B, info->bufferB);
+    (*info->hash_begin)(info->hash_context);
+    (*info->hash_update)(info->hash_context, info->B, info->workingBufferB);
 
     for (i = 0; i < info->B; ++i) {
-        info->bufferB[i] ^= 0x6a;
+        info->workingBufferB[i] ^= 0x6a;
     }
 }
 
-void hmac_update(const hash_info_t *info, int msglen, const unsigned char *msg)
+void hmac_update(
+    const hmac_context_t *info, int msglen, const unsigned char *msg)
 {
     if (is_bad_hash_info(info) || msglen < 0 || (msglen > 0 && !msg)) {
         return;
@@ -56,24 +58,15 @@ void hmac_update(const hash_info_t *info, int msglen, const unsigned char *msg)
     }
 }
 
-void hmac_finish(const hash_info_t *info, unsigned char *out)
+void hmac_output(const hmac_context_t *info, unsigned char *out)
 {
     if (is_bad_hash_info(info) || !out) {
         return;
     }
 
-    (*info->hash_finish)(info->hash_context, info->bufferL);
-    (*info->hash_starts)(info->hash_context);
-    (*info->hash_update)(info->hash_context, info->B, info->bufferB);
-    (*info->hash_update)(info->hash_context, info->L, info->bufferL);
-    (*info->hash_finish)(info->hash_context, out);
-}
-
-void hmac(const hash_info_t *info, int keylen, const unsigned char *key,
-                                   int msglen, const unsigned char *msg,
-                                   unsigned char *out)
-{
-    hmac_starts(info, keylen, key);
-    hmac_update(info, msglen, msg);
-    hmac_finish(info, out);
+    (*info->hash_output)(info->hash_context, info->workingBufferL);
+    (*info->hash_begin)(info->hash_context);
+    (*info->hash_update)(info->hash_context, info->B, info->workingBufferB);
+    (*info->hash_update)(info->hash_context, info->L, info->workingBufferL);
+    (*info->hash_output)(info->hash_context, out);
 }

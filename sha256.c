@@ -29,10 +29,10 @@ static void process_one_block(sha256_context_t *ctx, const unsigned char *data)
     };
 
     for (i = 0; i <= 15; ++i) {
-        m[i] = (data[i * 4 + 0] << 24) |
-               (data[i * 4 + 1] << 16) |
-               (data[i * 4 + 2] <<  8) |
-               (data[i * 4 + 3] <<  0) ;
+        m[i] = ((sha256_word_t) data[i * 4 + 0] << 24)
+             | ((sha256_word_t) data[i * 4 + 1] << 16)
+             | ((sha256_word_t) data[i * 4 + 2] <<  8)
+             | ((sha256_word_t) data[i * 4 + 3] <<  0);
     }
     for (i = 16; i <= 63; ++i) {
         m[i] = Q1(m[i -  2]) + m[i -  7] +
@@ -71,28 +71,28 @@ static void process_one_block(sha256_context_t *ctx, const unsigned char *data)
     ctx->runninghash[7] += h;
 }
 
-static void increase_by(sha256_word_t *bignumber, sha256_word_t incr)
+static void increase_by(sha256_word_t *biginteger, sha256_word_t incr)
 {
     /*          high bits           low bits
-     *      +--------------+    +--------------+
-     *      | bignumber[0] |    | bignumber[1] |
-     *      +--------------+    +--------------+
+     *      +---------------+    +---------------+
+     *      | biginteger[0] |    | biginteger[1] |
+     *      +---------------+    +---------------+
      */
     sha256_word_t space;
 
-    space = 0xffffffff - bignumber[1];
+    space = 0xffffffff - biginteger[1];
     incr &= 0xffffffff;
 
-    bignumber[1] += incr;
+    biginteger[1] += incr;
 
     if (incr >= space) {
-        bignumber[1] &= 0xffffffff;
-        bignumber[0] += 1;
-        bignumber[0] &= 0xffffffff;
+        biginteger[1] &= 0xffffffff;
+        biginteger[0] += 1;
+        biginteger[0] &= 0xffffffff;
     }
 }
 
-void sha256_starts(void *_ctx)
+void sha256_begin(void *_ctx)
 {
     sha256_context_t *ctx = _ctx;
 
@@ -135,7 +135,7 @@ void sha256_update(void *_ctx, int ilen, const unsigned char *ibuf)
     }
 }
 
-void sha256_finish(void *_ctx, unsigned char *obuf)
+void sha256_output(void *_ctx, unsigned char *obuf)
 {
     sha256_context_t *ctx = _ctx;
     sha256_context_t ctx_;
@@ -166,14 +166,14 @@ void sha256_finish(void *_ctx, unsigned char *obuf)
 
     /* Append eight bytes representing the message bit length (big-endian) */
     increase_by(ctx_.totalbitlen, ctx_.msgchunklen * 8);
-    ctx_.msgchunk[56] = ctx_.totalbitlen[0] >> 24;
-    ctx_.msgchunk[57] = ctx_.totalbitlen[0] >> 16;
-    ctx_.msgchunk[58] = ctx_.totalbitlen[0] >>  8;
-    ctx_.msgchunk[59] = ctx_.totalbitlen[0] >>  0;
-    ctx_.msgchunk[60] = ctx_.totalbitlen[1] >> 24;
-    ctx_.msgchunk[61] = ctx_.totalbitlen[1] >> 16;
-    ctx_.msgchunk[62] = ctx_.totalbitlen[1] >>  8;
-    ctx_.msgchunk[63] = ctx_.totalbitlen[1] >>  0;
+    ctx_.msgchunk[56] = (ctx_.totalbitlen[0] >> 24) & 0xff;
+    ctx_.msgchunk[57] = (ctx_.totalbitlen[0] >> 16) & 0xff;
+    ctx_.msgchunk[58] = (ctx_.totalbitlen[0] >>  8) & 0xff;
+    ctx_.msgchunk[59] = (ctx_.totalbitlen[0] >>  0) & 0xff;
+    ctx_.msgchunk[60] = (ctx_.totalbitlen[1] >> 24) & 0xff;
+    ctx_.msgchunk[61] = (ctx_.totalbitlen[1] >> 16) & 0xff;
+    ctx_.msgchunk[62] = (ctx_.totalbitlen[1] >>  8) & 0xff;
+    ctx_.msgchunk[63] = (ctx_.totalbitlen[1] >>  0) & 0xff;
     process_one_block(&ctx_, ctx_.msgchunk);
 
     /* Dump the resulting 32-byte hash value */
@@ -183,19 +183,4 @@ void sha256_finish(void *_ctx, unsigned char *obuf)
         obuf[i * 4 + 2] = (ctx_.runninghash[i] >>  8) & 0xff;
         obuf[i * 4 + 3] = (ctx_.runninghash[i] >>  0) & 0xff;
     }
-}
-
-void sha256(int ilen, const unsigned char *ibuf, unsigned char *obuf)
-{
-    sha256_context_t ctx_;
-
-    if ((ilen && !ibuf) || !obuf) {
-        return;
-    }
-
-    sha256_starts(&ctx_);
-    if (ilen) {
-        sha256_update(&ctx_, ilen, ibuf);
-    }
-    sha256_finish(&ctx_, obuf);
 }
