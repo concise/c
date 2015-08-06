@@ -135,15 +135,26 @@ int main(void)
 
     example_usage_1(0, 0, 0, 0, result);
     dump_buffer(SHA256_OUTPUT_SIZE, result);
+    // b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad
 
     example_usage_2(0, 0, 0, 0, result);
     dump_buffer(SHA256_OUTPUT_SIZE, result);
+    // b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad
 
     example_usage_3(0, 0, 0, 0, result);
     dump_buffer(SHA256_OUTPUT_SIZE, result);
-
-    // HMAC-SHA-256("", "") is
     // b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad
+
+    example_usage_3(
+        20, (const unsigned char *) &(struct { unsigned char _[20]; }){
+            "\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b"
+            "\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b" },
+        8, (const unsigned char *) &(struct { unsigned char _[8]; }){
+            "Hi There" },
+        result
+    );
+    dump_buffer(SHA256_OUTPUT_SIZE, result);
+    // b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7
 
     return 0;
 }
