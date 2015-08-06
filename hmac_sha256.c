@@ -21,6 +21,11 @@ void hmac_sha256_begin(hmac_sha256_context_t *, int, const unsigned char *);
 void hmac_sha256_update(hmac_sha256_context_t *, int, const unsigned char *);
 void hmac_sha256_output(hmac_sha256_context_t *, unsigned char *);
 
+void hmac_sha256(
+    int, const unsigned char *,
+    int, const unsigned char *,
+    unsigned char *);
+
 
 
 /* ----- hmac_sha256.c (implementation details) ----- */
@@ -64,6 +69,21 @@ void hmac_sha256_output(
     hmac_output(&ctx->hmac_ctx, out);
 }
 
+void hmac_sha256(
+    int keylen, const unsigned char *key,
+    int msglen, const unsigned char *msg,
+    unsigned char *out)
+{
+    if (!out) {
+        return;
+    }
+
+    hmac_sha256_context_t hmac_sha256_ctx;
+    hmac_sha256_begin(&hmac_sha256_ctx, keylen, key);
+    hmac_sha256_update(&hmac_sha256_ctx, msglen, msg);
+    hmac_sha256_output(&hmac_sha256_ctx, out);
+}
+
 
 
 /* ----- main.c (example usage) ----- */
@@ -79,12 +99,13 @@ static void dump_buffer(int length, const unsigned char *ptr)
     printf("\n");
 }
 
+void example_usage_0(void);
 void example_usage_1(void);
-
 void example_usage_2(void);
 
 int main(void)
 {
+    example_usage_0();
     example_usage_1();
     example_usage_2();
 
@@ -92,6 +113,13 @@ int main(void)
     // b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad
 
     return 0;
+}
+
+void example_usage_0(void)
+{
+    unsigned char result[SHA256_OUTPUT_SIZE];
+    hmac_sha256(0, 0, 0, 0, result);
+    dump_buffer(SHA256_OUTPUT_SIZE, result);
 }
 
 void example_usage_1(void)
