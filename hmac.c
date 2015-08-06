@@ -10,8 +10,9 @@ static int is_bad_hash_info(const hmac_context_t *info)
 }
 
 void hmac_begin(
-    const hmac_context_t *info, int keylen, const unsigned char *key)
+    const void *info_, int keylen, const unsigned char *key)
 {
+    const hmac_context_t *info = info_;
     int i;
 
     if (is_bad_hash_info(info) || keylen < 0 || (keylen > 0 && !key)) {
@@ -47,8 +48,10 @@ void hmac_begin(
 }
 
 void hmac_update(
-    const hmac_context_t *info, int msglen, const unsigned char *msg)
+    const void *info_, int msglen, const unsigned char *msg)
 {
+    const hmac_context_t *info = info_;
+
     if (is_bad_hash_info(info) || msglen < 0 || (msglen > 0 && !msg)) {
         return;
     }
@@ -58,8 +61,10 @@ void hmac_update(
     }
 }
 
-void hmac_output(const hmac_context_t *info, unsigned char *out)
+void hmac_output(const void *info_, unsigned char *out)
 {
+    const hmac_context_t *info = info_;
+
     if (is_bad_hash_info(info) || !out) {
         return;
     }

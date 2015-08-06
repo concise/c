@@ -13,8 +13,8 @@ typedef struct {
     unsigned char *workingBufferL; // a L-byte buffer for HMAC computation
 } hmac_context_t;
 
-void hmac_begin(const hmac_context_t *, int, const unsigned char *);
-void hmac_update(const hmac_context_t *, int, const unsigned char *);
-void hmac_output(const hmac_context_t *, unsigned char *);
+void hmac_begin(const void *, int, const unsigned char *);
+void hmac_update(const void *, int, const unsigned char *);
+void hmac_output(const void *, unsigned char *);
 
 #endif

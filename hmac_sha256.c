@@ -17,9 +17,7 @@ typedef struct {
     unsigned char obuf[SHA256_OUTPUT_SIZE];
 } hmac_sha256_context_t;
 
-void hmac_sha256_begin(hmac_sha256_context_t *, int, const unsigned char *);
-void hmac_sha256_update(hmac_sha256_context_t *, int, const unsigned char *);
-void hmac_sha256_output(hmac_sha256_context_t *, unsigned char *);
+void hmac_sha256_init(hmac_sha256_context_t *);
 
 void hmac_sha256(
     int, const unsigned char *,
@@ -30,8 +28,7 @@ void hmac_sha256(
 
 /* ----- hmac_sha256.c (implementation details) ----- */
 
-void hmac_sha256_begin(
-        hmac_sha256_context_t *ctx, int keylen, const unsigned char *key)
+void hmac_sha256_init(hmac_sha256_context_t *ctx)
 {
     if (!ctx) {
         return;
@@ -45,28 +42,6 @@ void hmac_sha256_begin(
     ctx->hmac_ctx.L              = SHA256_OUTPUT_SIZE;
     ctx->hmac_ctx.workingBufferB = ctx->ibuf;
     ctx->hmac_ctx.workingBufferL = ctx->obuf;
-
-    hmac_begin(&ctx->hmac_ctx, keylen, key);
-}
-
-void hmac_sha256_update(
-        hmac_sha256_context_t *ctx, int msglen, const unsigned char *msg)
-{
-    if (!ctx) {
-        return;
-    }
-
-    hmac_update(&ctx->hmac_ctx, msglen, msg);
-}
-
-void hmac_sha256_output(
-        hmac_sha256_context_t *ctx, unsigned char *out)
-{
-    if (!ctx) {
-        return;
-    }
-
-    hmac_output(&ctx->hmac_ctx, out);
 }
 
 void hmac_sha256(
@@ -79,9 +54,10 @@ void hmac_sha256(
     }
 
     hmac_sha256_context_t hmac_sha256_ctx;
-    hmac_sha256_begin(&hmac_sha256_ctx, keylen, key);
-    hmac_sha256_update(&hmac_sha256_ctx, msglen, msg);
-    hmac_sha256_output(&hmac_sha256_ctx, out);
+    hmac_sha256_init(&hmac_sha256_ctx);
+    hmac_begin(&hmac_sha256_ctx, keylen, key);
+    hmac_update(&hmac_sha256_ctx, msglen, msg);
+    hmac_output(&hmac_sha256_ctx, out);
 }
 
 
@@ -99,64 +75,75 @@ static void dump_buffer(int length, const unsigned char *ptr)
     printf("\n");
 }
 
-void example_usage_0(void);
-void example_usage_1(void);
-void example_usage_2(void);
+static void example_usage_1(
+    int keylen, const unsigned char *key,
+    int msglen, const unsigned char *msg,
+    unsigned char *out)
+{
+    hmac_context_t hmac_ctx;
+    sha256_context_t sha256_ctx;
+    unsigned char ibuf[SHA256_IBLOCK_SIZE];
+    unsigned char obuf[SHA256_OUTPUT_SIZE];
+
+    hmac_ctx.hash_context   = &sha256_ctx;
+    hmac_ctx.hash_begin     = &sha256_begin;
+    hmac_ctx.hash_update    = &sha256_update;
+    hmac_ctx.hash_output    = &sha256_output;
+    hmac_ctx.B              = SHA256_IBLOCK_SIZE;
+    hmac_ctx.L              = SHA256_OUTPUT_SIZE;
+    hmac_ctx.workingBufferB = ibuf;
+    hmac_ctx.workingBufferL = obuf;
+
+    hmac_begin(&hmac_ctx, keylen, key);
+    hmac_update(&hmac_ctx, msglen, msg);
+    hmac_output(&hmac_ctx, out);
+}
+
+static void example_usage_2(
+    int keylen, const unsigned char *key,
+    int msglen, const unsigned char *msg,
+    unsigned char *out)
+{
+    hmac_sha256_context_t hmac_sha256_ctx;
+    hmac_sha256_init(&hmac_sha256_ctx);
+    hmac_begin(&hmac_sha256_ctx, keylen, key);
+    hmac_update(&hmac_sha256_ctx, msglen, msg);
+    hmac_output(&hmac_sha256_ctx, out);
+
+    //
+    // OR:
+    //
+
+    // hmac_sha256_context_t hmac_sha256_ctx;
+    // hmac_sha256_init(&hmac_sha256_ctx);
+    // hmac_begin(&hmac_sha256_ctx.hmac_ctx, keylen, key);
+    // hmac_update(&hmac_sha256_ctx.hmac_ctx, msglen, msg);
+    // hmac_output(&hmac_sha256_ctx.hmac_ctx, out);
+}
+
+static void example_usage_3(
+    int keylen, const unsigned char *key,
+    int msglen, const unsigned char *msg,
+    unsigned char *out)
+{
+    hmac_sha256(keylen, key, msglen, msg, out);
+}
 
 int main(void)
 {
-    example_usage_0();
-    example_usage_1();
-    example_usage_2();
+    unsigned char result[SHA256_OUTPUT_SIZE];
+
+    example_usage_1(0, 0, 0, 0, result);
+    dump_buffer(SHA256_OUTPUT_SIZE, result);
+
+    example_usage_2(0, 0, 0, 0, result);
+    dump_buffer(SHA256_OUTPUT_SIZE, result);
+
+    example_usage_3(0, 0, 0, 0, result);
+    dump_buffer(SHA256_OUTPUT_SIZE, result);
 
     // HMAC-SHA-256("", "") is
     // b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad
 
     return 0;
-}
-
-void example_usage_0(void)
-{
-    unsigned char result[SHA256_OUTPUT_SIZE];
-    hmac_sha256(0, 0, 0, 0, result);
-    dump_buffer(SHA256_OUTPUT_SIZE, result);
-}
-
-void example_usage_1(void)
-{
-    unsigned char result[SHA256_OUTPUT_SIZE];
-
-    hmac_sha256_context_t hmac_sha256_ctx;
-    hmac_sha256_begin(&hmac_sha256_ctx, 0, 0);
-    hmac_sha256_update(&hmac_sha256_ctx, 0, 0);
-    hmac_sha256_output(&hmac_sha256_ctx, result);
-
-    dump_buffer(SHA256_OUTPUT_SIZE, result);
-}
-
-void example_usage_2(void)
-{
-    unsigned char result[SHA256_OUTPUT_SIZE];
-
-    {
-        hmac_context_t hmac_ctx;
-        sha256_context_t sha256_ctx;
-        unsigned char ibuf[SHA256_IBLOCK_SIZE];
-        unsigned char obuf[SHA256_OUTPUT_SIZE];
-
-        hmac_ctx.hash_context   = &sha256_ctx;
-        hmac_ctx.hash_begin     = &sha256_begin;
-        hmac_ctx.hash_update    = &sha256_update;
-        hmac_ctx.hash_output    = &sha256_output;
-        hmac_ctx.B              = SHA256_IBLOCK_SIZE;
-        hmac_ctx.L              = SHA256_OUTPUT_SIZE;
-        hmac_ctx.workingBufferB = ibuf;
-        hmac_ctx.workingBufferL = obuf;
-
-        hmac_begin(&hmac_ctx, 0, 0);
-        hmac_update(&hmac_ctx, 0, 0);
-        hmac_output(&hmac_ctx, result);
-    }
-
-    dump_buffer(SHA256_OUTPUT_SIZE, result);
 }
