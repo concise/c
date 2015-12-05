@@ -6,7 +6,7 @@ int read_from_file_stream(
 int write_to_file_stream(
         FILE *stream, const unsigned char *data, size_t dlen);
 
-#define READ_FROM(filename, ok_block, ng_block)                             \
+#define READ_FROM(filename, data, dlen, ok_block, ng_block)                 \
     do {                                                                    \
         unsigned char data[16384];                                          \
         size_t dlen = 0;                                                    \

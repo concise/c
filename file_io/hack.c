@@ -1,4 +1,4 @@
-#include "read_write_hack.h"
+#include "hack.h"
 
 int read_from_file_stream(
         FILE *stream, unsigned char *data, size_t buf_capacity, size_t *dlen)

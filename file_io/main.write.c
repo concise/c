@@ -1,4 +1,4 @@
-#include "read_write_hack.h"
+#include "hack.h"
 
 int main(void)
 {
