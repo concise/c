@@ -1,6 +1,6 @@
 #include "loadfile.h"
 
-const char *load_all_bytes_in_a_file_stream(
+static const char *load_all_bytes_in_a_file_stream(
         FILE *f, unsigned char *buf, size_t blen, size_t *dlen)
 {
     if (f == NULL || buf == NULL || !(blen > 0) || dlen == NULL)
