@@ -1,6 +1,28 @@
-#include "loadfile.h"
+#include <stdio.h>
 
-static const char *load_all_bytes_in_a_file_stream(
+static const char *filestream2buf(
+        FILE *f, unsigned char *buf, size_t blen, size_t *dlen);
+
+static const char *loadfile(
+        const char *fname, unsigned char *buf, size_t blen, size_t *dlen);
+
+int main(void)
+{
+    size_t dlen;
+    unsigned char buf[4096];
+    const char *error;
+
+    error = loadfile("/tmp/testfile.txt", buf, 4096, &dlen);
+
+    if (error)
+        printf("Error: %s\n", error);
+    else
+        printf("Successfully read %zu bytes from /tmp/testfile.txt\n", dlen);
+
+    return 0;
+}
+
+static const char *filestream2buf(
         FILE *f, unsigned char *buf, size_t blen, size_t *dlen)
 {
     if (f == NULL || buf == NULL || !(blen > 0) || dlen == NULL)
@@ -18,7 +40,7 @@ static const char *load_all_bytes_in_a_file_stream(
         return "some unknown error occurs";
 }
 
-const char *loadfile(
+static const char *loadfile(
         const char *fname, unsigned char *buf, size_t blen, size_t *dlen)
 {
     FILE *f;
@@ -29,25 +51,9 @@ const char *loadfile(
     if (f == NULL)
         return "cannot open file";
 
-    error = load_all_bytes_in_a_file_stream(f, buf, blen, dlen);
+    error = filestream2buf(f, buf, blen, dlen);
 
     fclose(f);
 
     return error;
-}
-
-int main(void)
-{
-    size_t dlen;
-    unsigned char buf[4096];
-    const char *error;
-
-    error = loadfile("/tmp/testfile.txt", buf, 4096, &dlen);
-
-    if (error)
-        printf("Error: %s\n", error);
-    else
-        printf("Successfully read %zu bytes from /tmp/testfile.txt\n", dlen);
-
-    return 0;
 }
