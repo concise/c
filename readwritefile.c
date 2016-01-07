@@ -8,31 +8,27 @@ static const char *writefile(
 
 int main(void)
 {
-    // test writefile
     {
         unsigned char buf[12] = "Hello world!";
         const char *error;
 
         error = writefile("/tmp/testfile.txt", buf, 12);
-
         if (error)
             printf("Error: %s\n", error);
         else
-            printf("Successfully write some data to /tmp/testfile.txt\n");
+            printf("Successfully write some data\n");
     }
 
-    // test readfile
     {
-        size_t dlen;
         unsigned char buf[4096];
+        size_t dlen;
         const char *error;
 
         error = readfile("/tmp/testfile.txt", buf, 4096, &dlen);
-
         if (error)
             printf("Error: %s\n", error);
         else
-            printf("Successfully read %zu bytes from /tmp/testfile.txt\n", dlen);
+            printf("Successfully read %zu bytes\n", dlen);
     }
 }
 
