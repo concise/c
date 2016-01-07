@@ -6,32 +6,6 @@ static const char *readfile(
 static const char *writefile(
         const char *fname, const unsigned char *buf, size_t blen);
 
-int main(void)
-{
-    {
-        unsigned char buf[12] = "Hello world!";
-        const char *error;
-
-        error = writefile("/tmp/testfile.txt", buf, 12);
-        if (error)
-            printf("Error: %s\n", error);
-        else
-            printf("Successfully write some data\n");
-    }
-
-    {
-        unsigned char buf[4096];
-        size_t dlen;
-        const char *error;
-
-        error = readfile("/tmp/testfile.txt", buf, 4096, &dlen);
-        if (error)
-            printf("Error: %s\n", error);
-        else
-            printf("Successfully read %zu bytes\n", dlen);
-    }
-}
-
 static const char *readfile(
         const char *fname, unsigned char *buf, size_t blen, size_t *dlen)
 {
@@ -71,4 +45,30 @@ static const char *writefile(
         errormsg = "some unknown error occurs";
     fclose(f);
     return errormsg;
+}
+
+int main(void)
+{
+    {
+        unsigned char buf[12] = "Hello world!";
+        const char *error;
+
+        error = writefile("/tmp/testfile.txt", buf, 12);
+        if (error)
+            printf("Error: %s\n", error);
+        else
+            printf("Successfully write some data\n");
+    }
+
+    {
+        unsigned char buf[4096];
+        size_t dlen;
+        const char *error;
+
+        error = readfile("/tmp/testfile.txt", buf, 4096, &dlen);
+        if (error)
+            printf("Error: %s\n", error);
+        else
+            printf("Successfully read %zu bytes\n", dlen);
+    }
 }
