@@ -1,13 +1,13 @@
 #include <stdio.h>
 
 static const char *readfile(
-        const char *fname, unsigned char *buf, size_t blen, size_t *dlen);
+        const char *fname, void *buf, size_t blen, size_t *dlen);
 
 static const char *writefile(
-        const char *fname, const unsigned char *buf, size_t blen);
+        const char *fname, const void *buf, size_t blen);
 
 static const char *readfile(
-        const char *fname, unsigned char *buf, size_t blen, size_t *dlen)
+        const char *fname, void *buf, size_t blen, size_t *dlen)
 {
     FILE *f;
     const char *errormsg;
@@ -28,7 +28,7 @@ static const char *readfile(
 }
 
 static const char *writefile(
-        const char *fname, const unsigned char *buf, size_t blen)
+        const char *fname, const void *buf, size_t blen)
 {
     FILE *f;
     size_t nbytes_written;
