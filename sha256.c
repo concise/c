@@ -96,7 +96,7 @@ void sha256_begin(void *_ctx)
 {
     sha256_context_t *ctx = _ctx;
 
-    if (!ctx) {
+    if (ctx == NULL) {
         return;
     }
 
@@ -120,7 +120,7 @@ void sha256_update(void *_ctx, size_t ilen, const uint8_t *ibuf)
     sha256_context_t *ctx = _ctx;
     size_t i;
 
-    if (!ctx || (ilen && !ibuf)) {
+    if (ctx == NULL || (ilen > 0 && ibuf == NULL)) {
         return;
     }
 
@@ -141,7 +141,7 @@ void sha256_output(void *_ctx, uint8_t *obuf)
     sha256_context_t ctx_;
     uint8_t i;
 
-    if (!ctx || !obuf) {
+    if (ctx == NULL || obuf == NULL) {
         return;
     }
 
