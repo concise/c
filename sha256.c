@@ -1,4 +1,13 @@
+//
+// This file contains a C99 implementation for "SHA-256" as specified in NIST
+// FIPS 180-4 (August 2015) assuming we have uint32_t.  The specification can
+// be found here:
+//
+//      http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
+//
+
 #include "sha256.h"
+#include <string.h>
 
 #define SHR(a, b)       (((a) & 0xffffffff) >> (b))
 #define ROTR(a, b)      (SHR(a, b) | (((a) << (32 - (b))) & 0xffffffff))
@@ -109,15 +118,22 @@ void sha256_begin(sha256_context_t *ctx)
 
 void sha256_update(sha256_context_t *ctx, size_t ilen, const uint8_t *ibuf)
 {
-    size_t i;
+    size_t space;
+    size_t d;
 
     if (ctx == NULL || (ilen > 0 && ibuf == NULL)) {
         return;
     }
 
-    for (i = 0; i < ilen; ++i) {
-        ctx->msgchunk[ctx->msgchunklen] = ibuf[i];
-        ctx->msgchunklen += 1;
+    while (ilen > 0) {
+        space = 64 - ctx->msgchunklen;
+        d = (space < ilen) ? space : ilen;
+
+        memcpy(ctx->msgchunk + ctx->msgchunklen, ibuf, d);
+        ctx->msgchunklen += d;
+        ibuf += d;
+        ilen -= d;
+
         if (ctx->msgchunklen == 64) {
             process_one_block(ctx, ctx->msgchunk);
             increase_by(ctx->totalbitlen, 512);
