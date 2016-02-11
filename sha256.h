@@ -10,12 +10,12 @@
 typedef struct {
     uint32_t runninghash[8];    // intermediate hash value (H0 ~ H7)
     uint32_t totalbitlen[2];    // bit length (l) of the input message
-    uint8_t msgchunk[64];       // last unprocessed message chunk
-    uint8_t msgchunklen;        // byte length of the unprocessed chunk
-} sha256_context_t;
+    uint8_t buffer[64];         // buffer for unprocessed input message
+    uint32_t bufferlen;         // byte length of unprocessed input message
+} sha256_context;
 
-void sha256_begin(sha256_context_t *ctx);
-void sha256_update(sha256_context_t *ctx, size_t ilen, const uint8_t *ibuf);
-void sha256_output(sha256_context_t *ctx, uint8_t *obuf);
+void sha256_starts(sha256_context *ctx);
+void sha256_update(sha256_context *ctx, const uint8_t *input, size_t ilen);
+void sha256_finish(const sha256_context *ctx, uint8_t *output);
 
 #endif
