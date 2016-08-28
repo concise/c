@@ -1,5 +1,5 @@
-#ifndef __HEXCODEC_H__
-#define __HEXCODEC_H__
+#ifndef HEXCODEC_H__
+#define HEXCODEC_H__
 
 void hexcodec_encode(int, const void *, void *);
 void hexcodec_Encode(int, const void *, void *);
