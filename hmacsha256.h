@@ -1,5 +1,5 @@
-#ifndef __HMACSHA256_H__
-#define __HMACSHA256_H__
+#ifndef HMACSHA256_H__
+#define HMACSHA256_H__
 
 #include "hmac.h"
 #include "sha256.h"

@@ -1,5 +1,5 @@
-#ifndef __HMAC_H__
-#define __HMAC_H__
+#ifndef HMAC_H__
+#define HMAC_H__
 
 typedef struct {
     void *hash_context;

@@ -31,7 +31,7 @@ static const uint32_t K[64] = {
     0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 };
 
-static void process_one_block(sha256_context *ctx, const uint8_t *data)
+static void process_one_block(sha256_context_t *ctx, const uint8_t *data)
 {
     int i;
     uint32_t a, b, c, d, e, f, g, h, t1, t2, m[64];
@@ -94,9 +94,11 @@ static void increase_by(uint32_t *biginteger, uint32_t incr)
     }
 }
 
-void sha256_starts(sha256_context *ctx)
+void sha256_begin(void *_ctx)
 {
-    if (ctx == NULL) {
+    sha256_context_t *ctx = _ctx;
+
+    if (!ctx) {
         return;
     }
 
@@ -115,11 +117,12 @@ void sha256_starts(sha256_context *ctx)
     ctx->bufferlen = 0;
 }
 
-void sha256_update(sha256_context *ctx, const uint8_t *input, size_t ilen)
+void sha256_update(void *_ctx, int ilen, const uint8_t *input)
 {
-    size_t i;
+    sha256_context_t *ctx = _ctx;
+    int i;
 
-    if (ctx == NULL || (ilen > 0 && input == NULL)) {
+    if (!ctx || (ilen > 0 && !input)) {
         return;
     }
 
@@ -134,12 +137,13 @@ void sha256_update(sha256_context *ctx, const uint8_t *input, size_t ilen)
     }
 }
 
-void sha256_finish(const sha256_context *ctx, uint8_t *output)
+void sha256_output(void *_ctx, uint8_t *output)
 {
-    sha256_context ctx_;
+    const sha256_context_t *ctx = _ctx;
+    sha256_context_t ctx_;
     int i;
 
-    if (ctx == NULL || output == NULL) {
+    if (!ctx || !output) {
         return;
     }
 

@@ -1,7 +1,6 @@
 #ifndef SHA256_H__
 #define SHA256_H__
 
-#include <stddef.h>
 #include <stdint.h>
 
 #define SHA256_IBLOCK_SIZE 64   // input block size in bytes
@@ -12,10 +11,10 @@ typedef struct {
     uint32_t totalbitlen[2];    // bit length (l) of the input message
     uint8_t buffer[64];         // buffer for unprocessed input message
     uint32_t bufferlen;         // byte length of unprocessed input message
-} sha256_context;
+} sha256_context_t;
 
-void sha256_starts(sha256_context *ctx);
-void sha256_update(sha256_context *ctx, const uint8_t *input, size_t ilen);
-void sha256_finish(const sha256_context *ctx, uint8_t *output);
+void sha256_begin(void *ctx);
+void sha256_update(void *ctx, int ilen, const uint8_t *input);
+void sha256_output(void *ctx, uint8_t *output);
 
 #endif
